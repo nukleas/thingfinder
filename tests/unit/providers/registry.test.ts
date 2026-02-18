@@ -9,6 +9,7 @@ function createMockProvider(name: string, available = true, results: SearchResul
     getFiles: vi.fn().mockResolvedValue([]),
     resolveUrl: vi.fn().mockReturnValue(null),
     isAvailable: vi.fn().mockReturnValue(available),
+    fetchFile: vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: 'OK', headers: { get: () => null }, json: () => Promise.resolve({}), body: null }),
   };
 }
 
@@ -68,6 +69,7 @@ describe('ProviderRegistry', () => {
       getFiles: vi.fn().mockResolvedValue([]),
       resolveUrl: vi.fn().mockReturnValue(null),
       isAvailable: vi.fn().mockReturnValue(true),
+      fetchFile: vi.fn(),
     };
     registry.register(p1);
     registry.register(failing);

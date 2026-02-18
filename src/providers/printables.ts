@@ -1,4 +1,5 @@
 import { HttpClient } from '../http/client.js';
+import type { TransportResponse } from '../http/transport.js';
 import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
 
 const SEARCH_QUERY = `
@@ -237,6 +238,10 @@ export class PrintablesProvider implements SourceProvider {
   isAvailable(): boolean {
     return true; // No auth required
   }
+
+  fetchFile = (url: string): Promise<TransportResponse> => {
+    return this.client.fetchRaw(url);
+  };
 
   private async graphql<T>(query: string, variables: Record<string, unknown>): Promise<T> {
     const resp = await this.client.post<GraphQLResponse<T>>('/graphql/', {

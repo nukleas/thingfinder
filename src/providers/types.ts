@@ -1,3 +1,5 @@
+import type { TransportResponse } from '../http/transport.js';
+
 export interface SearchOptions {
   query: string;
   page?: number;
@@ -25,22 +27,11 @@ export interface ModelFile {
   format: string;
 }
 
-export interface FetchFileResponse {
-  ok: boolean;
-  status: number;
-  statusText: string;
-  headers: { get(name: string): string | null };
-  body: ReadableStream<Uint8Array> | null;
-}
-
-export type FetchFileFn = (url: string) => Promise<FetchFileResponse>;
-
 export interface SourceProvider {
   readonly name: string;
   search(options: SearchOptions): Promise<SearchResult[]>;
   getFiles(modelId: string): Promise<ModelFile[]>;
   resolveUrl(url: string): string | null;
   isAvailable(): boolean;
-  /** Optional custom fetch for downloading files (e.g. to bypass Cloudflare). */
-  fetchFile?: FetchFileFn;
+  fetchFile(url: string): Promise<TransportResponse>;
 }

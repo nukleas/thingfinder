@@ -1,5 +1,6 @@
 import { AuthError } from '../errors.js';
 import { HttpClient } from '../http/client.js';
+import type { TransportResponse } from '../http/transport.js';
 import { getConfigValue } from '../config/store.js';
 import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
 
@@ -104,4 +105,8 @@ export class ThingiverseProvider implements SourceProvider {
   isAvailable(): boolean {
     return !!this.getApiKey();
   }
+
+  fetchFile = (url: string): Promise<TransportResponse> => {
+    return this.createClient().fetchRaw(url);
+  };
 }

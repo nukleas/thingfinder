@@ -1,7 +1,7 @@
-import { Impit } from 'impit';
-import { NetworkError } from '../errors.js';
-import { logger } from '../logger.js';
-import type { FetchFileFn, ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
+import { HttpClient } from '../http/client.js';
+import { ImpitTransport } from '../http/transport.js';
+import type { TransportResponse } from '../http/transport.js';
+import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
 
 interface ThangsSearchResponse {
   items: ThangsItem[];
@@ -38,43 +38,33 @@ interface ThangsModelPart {
 
 export class ThangsProvider implements SourceProvider {
   readonly name = 'thangs';
-  private impit: Impit;
+  private client: HttpClient;
 
   constructor() {
-    this.impit = new Impit({ browser: 'chrome' });
-  }
-
-  private async fetchJson<T>(url: string): Promise<T> {
-    logger.debug(`Thangs fetch: ${url}`);
-    const response = await this.impit.fetch(url, {
+    this.client = new HttpClient({
+      baseUrl: 'https://thangs.com',
+      providerName: 'thangs',
       headers: { Accept: 'application/json' },
+      transport: new ImpitTransport(),
     });
-
-    if (!response.ok) {
-      throw new NetworkError(`HTTP ${response.status}: ${response.statusText} for ${url}`);
-    }
-
-    return (await response.json()) as T;
   }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const page = (options.page ?? 1) - 1; // Thangs uses 0-based pages
     const pageSize = options.pageSize ?? 20;
 
-    const params = new URLSearchParams({
-      searchTerm: options.query,
-      page: String(page),
-      pageSize: String(pageSize),
-      pageScope: 'root',
-    });
-
-    const data = await this.fetchJson<ThangsSearchResponse>(
-      `https://thangs.com/api/search/v5/search-by-text?${params}`,
+    const data = await this.client.get<ThangsSearchResponse>(
+      '/api/search/v5/search-by-text',
+      {
+        searchTerm: options.query,
+        page: String(page),
+        pageSize: String(pageSize),
+        pageScope: 'root',
+      },
     );
 
     const freeItems = (data.items ?? []).filter(item => {
       if (item.visibility === 'market-paid' || item.marketplaceInfo?.priceInUSD) {
-        logger.debug(`Skipping paid model: ${item.name} ($${item.marketplaceInfo?.priceInUSD})`);
         return false;
       }
       return true;
@@ -95,8 +85,8 @@ export class ThangsProvider implements SourceProvider {
 
   async getFiles(modelId: string): Promise<ModelFile[]> {
     try {
-      const detail = await this.fetchJson<ThangsModelDetail>(
-        `https://thangs.com/api/models/${modelId}`,
+      const detail = await this.client.get<ThangsModelDetail>(
+        `/api/models/${modelId}`,
       );
 
       return (detail.parts ?? []).map((part, i) => {
@@ -130,7 +120,7 @@ export class ThangsProvider implements SourceProvider {
     return true;
   }
 
-  fetchFile: FetchFileFn = (url: string) => {
-    return this.impit.fetch(url);
+  fetchFile = (url: string): Promise<TransportResponse> => {
+    return this.client.fetchRaw(url);
   };
 }

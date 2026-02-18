@@ -1,6 +1,8 @@
 import { NetworkError, RateLimitError } from '../errors.js';
 import { logger } from '../logger.js';
 import { RateLimiter } from './rate-limiter.js';
+import type { Transport, TransportInit, TransportResponse } from './transport.js';
+import { NativeTransport } from './transport.js';
 
 export interface HttpClientOptions {
   baseUrl?: string;
@@ -8,10 +10,12 @@ export interface HttpClientOptions {
   timeoutMs?: number;
   maxRetries?: number;
   providerName?: string;
+  transport?: Transport;
 }
 
 export class HttpClient {
   private readonly rateLimiter = new RateLimiter(5, 1000);
+  private readonly transport: Transport;
   private readonly baseUrl: string;
   private readonly headers: Record<string, string>;
   private readonly timeoutMs: number;
@@ -24,6 +28,7 @@ export class HttpClient {
     this.timeoutMs = options.timeoutMs ?? 15000;
     this.maxRetries = options.maxRetries ?? 3;
     this.providerName = options.providerName ?? 'unknown';
+    this.transport = options.transport ?? new NativeTransport();
   }
 
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
@@ -44,12 +49,12 @@ export class HttpClient {
     });
   }
 
-  async fetchRaw(url: string, init?: RequestInit): Promise<Response> {
+  async fetchRaw(url: string, init?: TransportInit): Promise<TransportResponse> {
     await this.rateLimiter.acquire();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
-      const response = await fetch(url, {
+      const response = await this.transport.fetch(url, {
         ...init,
         signal: controller.signal,
         headers: { ...this.headers, ...init?.headers },
@@ -60,7 +65,7 @@ export class HttpClient {
     }
   }
 
-  private async request<T>(url: string, init: RequestInit): Promise<T> {
+  private async request<T>(url: string, init: TransportInit): Promise<T> {
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
@@ -75,9 +80,9 @@ export class HttpClient {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
-        let response: Response;
+        let response: TransportResponse;
         try {
-          response = await fetch(url, {
+          response = await this.transport.fetch(url, {
             ...init,
             signal: controller.signal,
             headers: { ...this.headers, ...init.headers },
@@ -112,6 +117,10 @@ export class HttpClient {
         return (await response.json()) as T;
       } catch (error) {
         if (error instanceof RateLimitError && error.retryAfterMs && error.retryAfterMs > 30000) {
+          throw error;
+        }
+        // Don't retry client errors (4xx) — re-throw immediately
+        if (error instanceof NetworkError && error.message.match(/^HTTP 4\d\d:/)) {
           throw error;
         }
         lastError = error as Error;

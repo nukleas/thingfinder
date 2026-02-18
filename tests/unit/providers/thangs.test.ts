@@ -5,10 +5,9 @@ import thangsDetailFixture from '../../fixtures/thangs-model-detail.json';
 
 const mockFetch = vi.fn();
 
-vi.mock('impit', () => ({
-  Impit: vi.fn().mockImplementation(() => ({
-    fetch: mockFetch,
-  })),
+vi.mock('../../../src/http/transport.js', () => ({
+  NativeTransport: vi.fn().mockImplementation(() => ({ fetch: mockFetch })),
+  ImpitTransport: vi.fn().mockImplementation(() => ({ fetch: mockFetch })),
 }));
 
 describe('ThangsProvider', () => {
@@ -47,7 +46,10 @@ describe('ThangsProvider', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
+        statusText: 'OK',
+        headers: { get: () => null },
         json: () => Promise.resolve(thangsFixture),
+        body: null,
       });
 
       const results = await provider.search({ query: 'benchy' });
@@ -67,7 +69,9 @@ describe('ThangsProvider', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('thangs.com/api/search/v5/search-by-text'),
-        expect.objectContaining({ headers: { Accept: 'application/json' } }),
+        expect.objectContaining({
+          headers: expect.objectContaining({ Accept: 'application/json' }),
+        }),
       );
     });
 
@@ -76,6 +80,9 @@ describe('ThangsProvider', () => {
         ok: false,
         status: 403,
         statusText: 'Forbidden',
+        headers: { get: () => null },
+        json: () => Promise.resolve({}),
+        body: null,
       });
 
       await expect(provider.search({ query: 'test' })).rejects.toThrow('HTTP 403');
@@ -87,7 +94,10 @@ describe('ThangsProvider', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
+        statusText: 'OK',
+        headers: { get: () => null },
         json: () => Promise.resolve(thangsDetailFixture),
+        body: null,
       });
 
       const files = await provider.getFiles('56337');
@@ -108,6 +118,9 @@ describe('ThangsProvider', () => {
         ok: false,
         status: 404,
         statusText: 'Not Found',
+        headers: { get: () => null },
+        json: () => Promise.resolve({}),
+        body: null,
       });
 
       const files = await provider.getFiles('99999');

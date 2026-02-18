@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { getRegistry } from '../providers/index.js';
+import { HttpClient } from '../http/client.js';
 import { downloadFiles } from '../download/manager.js';
 import { downloadFile } from '../download/stream.js';
 import { selectFiles } from '../ui/prompts.js';
@@ -22,8 +23,9 @@ export function createDownloadCommand(): Command {
       if (/\.(stl|3mf|obj|step|gcode|zip)$/i.test(url)) {
         const filename = url.split('/').pop() ?? 'download';
         const destPath = join(outputDir, filename);
+        const client = new HttpClient({ providerName: 'direct' });
         logger.info(`Downloading ${filename}...`);
-        await downloadFile(url, destPath);
+        await downloadFile(url, destPath, true, (u) => client.fetchRaw(u));
         logger.info(`Saved to ${destPath}`);
         return;
       }
