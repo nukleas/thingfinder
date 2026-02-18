@@ -67,7 +67,7 @@ export function createDownloadCommand(): Command {
         }
       }
 
-      const downloaded = await downloadFiles(filesToDownload, outputDir);
+      const downloaded = await downloadFiles(filesToDownload, outputDir, provider.fetchFile);
       console.log();
       logger.info(`Downloaded ${downloaded.length} file(s)`);
     });

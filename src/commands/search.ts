@@ -114,7 +114,7 @@ async function interactiveMode(results: SearchResult[], outputDir?: string, form
     return;
   }
 
-  const downloaded = await downloadFiles(selectedFiles, outputDir);
+  const downloaded = await downloadFiles(selectedFiles, outputDir, provider.fetchFile);
   console.log();
   logger.info(`Downloaded ${downloaded.length} file(s)`);
 }

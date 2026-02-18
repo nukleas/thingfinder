@@ -1,7 +1,7 @@
 import { Impit } from 'impit';
 import { NetworkError } from '../errors.js';
 import { logger } from '../logger.js';
-import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
+import type { FetchFileFn, ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
 
 interface ThangsSearchResponse {
   items: ThangsItem[];
@@ -20,6 +20,8 @@ interface ThangsItem {
   publishedOn?: string;
   fileTypes?: string[];
   site: string;
+  visibility?: string;
+  marketplaceInfo?: { priceInUSD: number } | null;
 }
 
 interface ThangsModelDetail {
@@ -33,8 +35,6 @@ interface ThangsModelPart {
   originalFileName: string;
   size: number;
 }
-
-const THANGS_GCS_BASE = 'https://storage.googleapis.com/thangs-thumbnails/production/';
 
 export class ThangsProvider implements SourceProvider {
   readonly name = 'thangs';
@@ -72,7 +72,15 @@ export class ThangsProvider implements SourceProvider {
       `https://thangs.com/api/search/v5/search-by-text?${params}`,
     );
 
-    return (data.items ?? []).map(item => ({
+    const freeItems = (data.items ?? []).filter(item => {
+      if (item.visibility === 'market-paid' || item.marketplaceInfo?.priceInUSD) {
+        logger.debug(`Skipping paid model: ${item.name} ($${item.marketplaceInfo?.priceInUSD})`);
+        return false;
+      }
+      return true;
+    });
+
+    return freeItems.map(item => ({
       id: item.modelId,
       name: item.name,
       creator: item.ownerUsername ?? 'Unknown',
@@ -93,10 +101,11 @@ export class ThangsProvider implements SourceProvider {
 
       return (detail.parts ?? []).map((part, i) => {
         const ext = part.originalFileName.split('.').pop()?.toLowerCase() ?? '';
+        const downloadUrl = `https://thangs.com/api/v4/models/${modelId}/viewerFile?part=${encodeURIComponent(part.filename)}&useDraco=false`;
         return {
           id: `${modelId}-${i}`,
           name: part.originalFileName,
-          url: THANGS_GCS_BASE + part.filename,
+          url: downloadUrl,
           size: part.size,
           format: ext,
         };
@@ -120,4 +129,8 @@ export class ThangsProvider implements SourceProvider {
   isAvailable(): boolean {
     return true;
   }
+
+  fetchFile: FetchFileFn = (url: string) => {
+    return this.impit.fetch(url);
+  };
 }

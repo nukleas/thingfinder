@@ -3,12 +3,13 @@ import { mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { getConfigValue } from '../config/store.js';
 import { logger } from '../logger.js';
-import type { ModelFile } from '../providers/types.js';
+import type { FetchFileFn, ModelFile } from '../providers/types.js';
 import { downloadFile } from './stream.js';
 
 export async function downloadFiles(
   files: ModelFile[],
   outputDir?: string,
+  customFetch?: FetchFileFn,
 ): Promise<string[]> {
   const dir = outputDir ?? (getConfigValue('downloadDir') as string) ?? '.';
   await mkdir(dir, { recursive: true });
@@ -30,7 +31,7 @@ export async function downloadFiles(
 
     logger.info(`Downloading ${file.name}...`);
     try {
-      await downloadFile(file.url, destPath);
+      await downloadFile(file.url, destPath, true, customFetch);
       downloaded.push(destPath);
       logger.info(`  Saved to ${destPath}`);
     } catch (error) {

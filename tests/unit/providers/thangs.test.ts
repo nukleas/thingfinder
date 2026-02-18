@@ -98,8 +98,9 @@ describe('ThangsProvider', () => {
         format: 'stl',
         size: 11257784,
       });
-      expect(files[0].url).toContain('storage.googleapis.com/thangs-thumbnails/production/');
+      expect(files[0].url).toContain('thangs.com/api/v4/models/56337/viewerFile');
       expect(files[0].url).toContain('3dBenchy.stl');
+      expect(files[0].url).toContain('useDraco=false');
     });
 
     it('should return empty array if model detail fails', async () => {

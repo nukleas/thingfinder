@@ -4,6 +4,7 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { DownloadError } from '../errors.js';
 import { createProgressBar } from '../ui/progress.js';
+import type { FetchFileFn } from '../providers/types.js';
 
 export interface DownloadProgress {
   filename: string;
@@ -15,15 +16,18 @@ export async function downloadFile(
   url: string,
   destPath: string,
   showProgress = true,
+  customFetch?: FetchFileFn,
 ): Promise<void> {
   const partialPath = destPath + '.partial';
   const filename = destPath.split('/').pop() ?? 'file';
 
-  let response: Response;
+  let response: { ok: boolean; status: number; statusText: string; headers: { get(name: string): string | null }; body: ReadableStream<Uint8Array> | null };
   try {
-    response = await fetch(url, {
-      headers: { Accept: '*/*' },
-    });
+    if (customFetch) {
+      response = await customFetch(url);
+    } else {
+      response = await fetch(url, { headers: { Accept: '*/*' } });
+    }
   } catch (error) {
     throw new DownloadError(url, `Failed to connect: ${(error as Error).message}`);
   }
