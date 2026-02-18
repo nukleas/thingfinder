@@ -22,10 +22,19 @@ interface ThangsItem {
   site: string;
 }
 
-interface ThangsDownloadResponse {
-  url?: string;
-  downloadUrl?: string;
+interface ThangsModelDetail {
+  id: string;
+  name: string;
+  parts: ThangsModelPart[];
 }
+
+interface ThangsModelPart {
+  filename: string;
+  originalFileName: string;
+  size: number;
+}
+
+const THANGS_GCS_BASE = 'https://storage.googleapis.com/thangs-thumbnails/production/';
 
 export class ThangsProvider implements SourceProvider {
   readonly name = 'thangs';
@@ -78,20 +87,22 @@ export class ThangsProvider implements SourceProvider {
 
   async getFiles(modelId: string): Promise<ModelFile[]> {
     try {
-      const data = await this.fetchJson<ThangsDownloadResponse>(
-        `https://thangs.com/api/v2/models/${modelId}/download-url`,
+      const detail = await this.fetchJson<ThangsModelDetail>(
+        `https://thangs.com/api/models/${modelId}`,
       );
-      const url = data.url ?? data.downloadUrl;
-      if (url) {
-        return [{
-          id: modelId,
-          name: `model-${modelId}.zip`,
-          url,
-          format: 'zip',
-        }];
-      }
+
+      return (detail.parts ?? []).map((part, i) => {
+        const ext = part.originalFileName.split('.').pop()?.toLowerCase() ?? '';
+        return {
+          id: `${modelId}-${i}`,
+          name: part.originalFileName,
+          url: THANGS_GCS_BASE + part.filename,
+          size: part.size,
+          format: ext,
+        };
+      });
     } catch {
-      // Some models may not have direct downloads via Thangs
+      // Model detail may not be available for aggregated (non-Thangs-native) models
     }
     return [];
   }

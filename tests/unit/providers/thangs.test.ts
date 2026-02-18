@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ThangsProvider } from '../../../src/providers/thangs.js';
 import thangsFixture from '../../fixtures/thangs-search.json';
+import thangsDetailFixture from '../../fixtures/thangs-model-detail.json';
 
 const mockFetch = vi.fn();
 
@@ -78,6 +79,38 @@ describe('ThangsProvider', () => {
       });
 
       await expect(provider.search({ query: 'test' })).rejects.toThrow('HTTP 403');
+    });
+  });
+
+  describe('getFiles', () => {
+    it('should return files from model detail parts', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(thangsDetailFixture),
+      });
+
+      const files = await provider.getFiles('56337');
+
+      expect(files).toHaveLength(1);
+      expect(files[0]).toMatchObject({
+        name: '3dBenchy.stl',
+        format: 'stl',
+        size: 11257784,
+      });
+      expect(files[0].url).toContain('storage.googleapis.com/thangs-thumbnails/production/');
+      expect(files[0].url).toContain('3dBenchy.stl');
+    });
+
+    it('should return empty array if model detail fails', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      const files = await provider.getFiles('99999');
+      expect(files).toEqual([]);
     });
   });
 });
