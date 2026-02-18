@@ -1,0 +1,20 @@
+{
+  "data": {
+    "getDownloadLink": {
+      "ok": true,
+      "output": {
+        "link": "https://files.printables.com/media/prints/3161/stls/3dbenchy.stl",
+        "ttl": 86400,
+        "count": 476309,
+        "files": [
+          {
+            "id": "49068",
+            "link": "https://files.printables.com/media/prints/3161/stls/3dbenchy.stl",
+            "ttl": 86400,
+            "fileType": "stl"
+          }
+        ]
+      }
+    }
+  }
+}

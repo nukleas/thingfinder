@@ -1,0 +1,41 @@
+{
+  "data": {
+    "result": {
+      "totalCount": 3799,
+      "items": [
+        {
+          "id": "3161",
+          "name": "3D BENCHY",
+          "slug": "3d-benchy",
+          "likesCount": 20710,
+          "downloadCount": 476309,
+          "datePublished": "2025-02-14T09:26:10+00:00",
+          "firstPublish": "2019-05-23T11:24:37+00:00",
+          "user": {
+            "id": "16",
+            "handle": "Prusa3D",
+            "publicUsername": "Prusa Research"
+          },
+          "image": {
+            "filePath": "media/prints/3161/images/benchy.jpg"
+          }
+        },
+        {
+          "id": "9999",
+          "name": "Mini Benchy",
+          "slug": "mini-benchy",
+          "likesCount": 500,
+          "downloadCount": 12000,
+          "datePublished": "2024-01-15T08:00:00+00:00",
+          "firstPublish": "2024-01-15T08:00:00+00:00",
+          "user": {
+            "id": "42",
+            "handle": "maker42",
+            "publicUsername": "Maker42"
+          },
+          "image": null
+        }
+      ]
+    }
+  }
+}

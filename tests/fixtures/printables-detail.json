@@ -1,0 +1,25 @@
+{
+  "data": {
+    "print": {
+      "id": "3161",
+      "name": "3D BENCHY",
+      "slug": "3d-benchy",
+      "stls": [
+        {
+          "id": "49068",
+          "name": "3dbenchy.stl",
+          "fileSize": 11285384
+        }
+      ],
+      "gcodes": [
+        {
+          "id": "240956",
+          "name": "BonkersBenchy_PLA_8m.bgcode",
+          "fileSize": 546849
+        }
+      ],
+      "slas": [],
+      "otherFiles": []
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "modelId": "1234567",
+      "name": "3DBenchy - The jolly 3D printing torture-test",
+      "ownerUsername": "CreativeTools",
+      "modelPageUrl": "https://thangs.com/m/1234567",
+      "thumbnailUrl": "https://storage.googleapis.com/thangs-thumbnails/production/benchy.png",
+      "likesCount": 5000,
+      "downloadCount": 120000,
+      "publishedOn": "2020-01-15T10:00:00.000Z",
+      "fileTypes": ["stl"],
+      "site": "thangs"
+    },
+    {
+      "modelId": "7654321",
+      "name": "Benchy Remix - Pirate Ship",
+      "ownerUsername": "Maker3D",
+      "modelPageUrl": "https://thangs.com/m/7654321",
+      "thumbnailUrl": "https://storage.googleapis.com/thangs-thumbnails/production/pirate.png",
+      "likesCount": 200,
+      "downloadCount": 5000,
+      "publishedOn": "2023-06-01T12:00:00.000Z",
+      "fileTypes": ["stl", "3mf"],
+      "site": "thangs"
+    }
+  ],
+  "totalPages": 10,
+  "totalResults": 200
+}
