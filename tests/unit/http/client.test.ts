@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { HttpClient } from '../../../src/http/client.js';
 import type { Transport, TransportResponse, TransportInit } from '../../../src/http/transport.js';
 

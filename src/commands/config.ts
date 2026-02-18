@@ -29,7 +29,8 @@ export function createConfigCommand(): Command {
         process.exit(1);
       }
       const value = getConfigValue(key);
-      console.log(value !== undefined && value !== '' ? String(value) : '(not set)');
+      const display = typeof value === 'string' ? value : JSON.stringify(value);
+      console.log(value !== undefined && display !== '' ? display : '(not set)');
     });
 
   cmd
@@ -41,7 +42,7 @@ export function createConfigCommand(): Command {
         const value = store.get(key);
         const display = key === 'thingiverse.apiKey' && value
           ? '****' + String(value).slice(-4)
-          : String(value ?? '(not set)');
+          : String(value) || '(not set)';
         console.log(`${key} = ${display}`);
       }
     });

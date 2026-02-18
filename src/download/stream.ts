@@ -49,15 +49,18 @@ export async function downloadFile(
     let bytesDownloaded = 0;
     const reader = response.body.getReader();
     const nodeReadable = new Readable({
-      async read() {
-        const { done, value } = await reader.read();
-        if (done) {
-          this.push(null);
-          return;
-        }
-        bytesDownloaded += value.byteLength;
-        bar?.update(bytesDownloaded);
-        this.push(Buffer.from(value));
+      read() {
+        void reader.read().then(({ done, value }) => {
+          if (done) {
+            this.push(null);
+            return;
+          }
+          bytesDownloaded += value.byteLength;
+          bar?.update(bytesDownloaded);
+          this.push(Buffer.from(value));
+        }).catch((err: unknown) => {
+          this.destroy(err instanceof Error ? err : new Error(String(err)));
+        });
       },
     });
 

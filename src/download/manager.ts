@@ -12,7 +12,7 @@ export async function downloadFiles(
   outputDir: string | undefined,
   fetchFn: (url: string) => Promise<TransportResponse>,
 ): Promise<string[]> {
-  const dir = outputDir ?? (getConfigValue('downloadDir') as string) ?? '.';
+  const dir = outputDir ?? (getConfigValue('downloadDir') as string | undefined) ?? '.';
   await mkdir(dir, { recursive: true });
 
   const downloaded: string[] = [];

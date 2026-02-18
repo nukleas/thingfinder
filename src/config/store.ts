@@ -4,12 +4,10 @@ import { configSchema, type ThingfinderConfig } from './schema.js';
 let store: Conf<ThingfinderConfig> | null = null;
 
 export function getStore(): Conf<ThingfinderConfig> {
-  if (!store) {
-    store = new Conf<ThingfinderConfig>({
+  store ??= new Conf<ThingfinderConfig>({
       projectName: 'thingfinder',
       schema: configSchema,
     });
-  }
   return store;
 }
 

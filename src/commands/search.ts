@@ -51,7 +51,7 @@ export function createSearchCommand(): Command {
         {
           query,
           pageSize: parseInt(options.limit ?? '20', 10),
-          sort: (options.sort as 'relevant' | 'popular' | 'newest') ?? 'relevant',
+          sort: (options.sort ?? 'relevant') as 'relevant' | 'popular' | 'newest',
         },
         options.source,
       );
@@ -114,7 +114,7 @@ async function interactiveMode(results: SearchResult[], outputDir?: string, form
     return;
   }
 
-  const downloaded = await downloadFiles(selectedFiles, outputDir, provider.fetchFile);
+  const downloaded = await downloadFiles(selectedFiles, outputDir, (u) => provider.fetchFile(u));
   console.log();
   logger.info(`Downloaded ${downloaded.length} file(s)`);
 }

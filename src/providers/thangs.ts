@@ -4,7 +4,7 @@ import type { TransportResponse } from '../http/transport.js';
 import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
 
 interface ThangsSearchResponse {
-  items: ThangsItem[];
+  items?: ThangsItem[];
   totalPages: number;
   totalResults: number;
 }
@@ -12,11 +12,11 @@ interface ThangsSearchResponse {
 interface ThangsItem {
   modelId: string;
   name: string;
-  ownerUsername: string;
-  modelPageUrl: string;
+  ownerUsername?: string;
+  modelPageUrl?: string;
   thumbnailUrl?: string;
-  likesCount: number;
-  downloadCount: number;
+  likesCount?: number;
+  downloadCount?: number;
   publishedOn?: string;
   fileTypes?: string[];
   site: string;
@@ -27,7 +27,7 @@ interface ThangsItem {
 interface ThangsModelDetail {
   id: string;
   name: string;
-  parts: ThangsModelPart[];
+  parts?: ThangsModelPart[];
 }
 
 interface ThangsModelPart {

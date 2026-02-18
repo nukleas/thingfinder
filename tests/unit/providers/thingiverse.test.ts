@@ -54,7 +54,7 @@ describe('ThingiverseProvider', () => {
   });
 
   describe('search', () => {
-    it('should parse search results correctly', async () => {
+    it('should parse search results correctly', () => {
       process.env.THINGFINDER_THINGIVERSE_API_KEY = 'test-key';
       provider = new ThingiverseProvider();
 
