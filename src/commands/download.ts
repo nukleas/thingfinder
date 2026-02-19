@@ -6,7 +6,7 @@ import { downloadFile } from '../download/stream.js';
 import { selectFiles } from '../ui/prompts.js';
 import { createSpinner } from '../ui/spinner.js';
 import { logger } from '../logger.js';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { getConfigValue } from '../config/store.js';
 
 export function createDownloadCommand(): Command {
@@ -21,7 +21,7 @@ export function createDownloadCommand(): Command {
 
       // Check if it's a direct file URL
       if (/\.(stl|3mf|obj|step|gcode|zip)$/i.test(url)) {
-        const filename = url.split('/').pop() ?? 'download';
+        const filename = basename(new URL(url).pathname) || 'download';
         const destPath = join(outputDir, filename);
         const client = new HttpClient({ providerName: 'direct' });
         logger.info(`Downloading ${filename}...`);

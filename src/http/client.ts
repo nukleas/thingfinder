@@ -93,7 +93,8 @@ export class HttpClient {
 
         if (response.status === 429) {
           const retryAfter = response.headers.get('retry-after');
-          const retryMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : undefined;
+          const parsedRetry = retryAfter ? parseInt(retryAfter, 10) : NaN;
+          const retryMs = !isNaN(parsedRetry) ? Math.min(parsedRetry, 120) * 1000 : undefined;
           if (retryMs && retryMs > 30000) {
             throw new RateLimitError(this.providerName, retryMs);
           }

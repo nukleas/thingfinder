@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { getConfigValue } from '../config/store.js';
@@ -23,7 +23,16 @@ export async function downloadFiles(
       continue;
     }
 
-    const destPath = join(dir, file.name);
+    const safeName = basename(file.name);
+    if (!safeName || safeName === '.' || safeName === '..') {
+      logger.warn(`Invalid filename for ${file.name}, skipping`);
+      continue;
+    }
+    const destPath = join(dir, safeName);
+    if (!resolve(destPath).startsWith(resolve(dir))) {
+      logger.warn(`Path traversal detected in ${file.name}, skipping`);
+      continue;
+    }
     if (existsSync(destPath)) {
       logger.warn(`File already exists: ${destPath}, skipping`);
       downloaded.push(destPath);
