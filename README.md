@@ -1,5 +1,9 @@
 # thingfinder
 
+[![CI](https://github.com/nukleas/thingfinder/actions/workflows/ci.yml/badge.svg)](https://github.com/nukleas/thingfinder/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/thingfinder)](https://www.npmjs.com/package/thingfinder)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 CLI tool for searching and downloading 3D printing files across multiple repositories.
 
 Search Thingiverse, Printables, and Thangs from a single command. No more opening three browser tabs.
@@ -166,9 +170,16 @@ npm run build
 # Run tests
 npm test
 
+# Lint
+npm run lint
+
 # Type check
 npm run typecheck
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
 
 ## License
 

@@ -28,12 +28,17 @@ npm-debug.log*
 
 # Download artifacts
 *.partial
+*.stl
+*.3mf
 
 # Test & coverage
 coverage/
 
 # Playwright MCP
 .playwright-mcp/
+
+# Claude Code
+.claude/
 
 # TypeScript cache
 *.tsbuildinfo

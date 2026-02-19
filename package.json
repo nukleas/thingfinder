@@ -27,7 +27,16 @@
     "thangs",
     "cli"
   ],
+  "author": "Nader Heidari",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nukleas/thingfinder.git"
+  },
+  "homepage": "https://github.com/nukleas/thingfinder#readme",
+  "bugs": {
+    "url": "https://github.com/nukleas/thingfinder/issues"
+  },
   "files": [
     "dist"
   ],
