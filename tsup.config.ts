@@ -22,4 +22,16 @@ export default defineConfig([
     sourcemap: true,
     dts: true,
   },
+  {
+    entry: { mcp: 'src/mcp/index.ts' },
+    format: ['esm'],
+    target: 'node20',
+    clean: false,
+    splitting: false,
+    sourcemap: true,
+    dts: false,
+    banner: {
+      js: '#!/usr/bin/env node',
+    },
+  },
 ]);

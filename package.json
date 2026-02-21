@@ -4,7 +4,8 @@
   "description": "CLI tool for searching and downloading 3D printing files across multiple repositories",
   "type": "module",
   "bin": {
-    "thingfinder": "./dist/index.js"
+    "thingfinder": "./dist/index.js",
+    "thingfinder-mcp": "./dist/mcp.js"
   },
   "exports": {
     ".": "./dist/index.js",
