@@ -1,0 +1,12 @@
+{
+  "gltf": {
+    "url": "https://sketchfab-prod-media.s3.amazonaws.com/archives/abc123/gltf/model.zip",
+    "size": 45000,
+    "expires": 300
+  },
+  "usdz": {
+    "url": "https://sketchfab-prod-media.s3.amazonaws.com/archives/abc123/usdz/model.usdz",
+    "size": 32000,
+    "expires": 300
+  }
+}

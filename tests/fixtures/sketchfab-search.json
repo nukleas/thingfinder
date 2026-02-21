@@ -1,0 +1,52 @@
+{
+  "cursors": { "next": "bz0x", "previous": null },
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "uid": "abc123def456",
+      "name": "3D Benchy",
+      "viewCount": 5000,
+      "likeCount": 250,
+      "isDownloadable": true,
+      "publishedAt": "2024-01-15T10:30:00.000000",
+      "viewerUrl": "https://sketchfab.com/3d-models/3d-benchy-abc123def456",
+      "thumbnails": {
+        "images": [
+          { "url": "https://media.sketchfab.com/models/abc123/thumb.jpeg", "width": 256, "height": 256 }
+        ]
+      },
+      "user": {
+        "uid": "user123",
+        "username": "benchymaker",
+        "displayName": "BenchyMaker"
+      },
+      "archives": {
+        "gltf": { "size": 45000, "type": "gltf" },
+        "usdz": { "size": 32000, "type": "usdz" }
+      }
+    },
+    {
+      "uid": "xyz789ghi012",
+      "name": "Robot Arm",
+      "viewCount": 1200,
+      "likeCount": 80,
+      "isDownloadable": true,
+      "publishedAt": "2024-03-20T08:00:00.000000",
+      "viewerUrl": "https://sketchfab.com/3d-models/robot-arm-xyz789ghi012",
+      "thumbnails": {
+        "images": [
+          { "url": "https://media.sketchfab.com/models/xyz789/thumb.jpeg", "width": 256, "height": 256 }
+        ]
+      },
+      "user": {
+        "uid": "user456",
+        "username": "robotfan",
+        "displayName": "RobotFan"
+      },
+      "archives": {
+        "gltf": { "size": 120000, "type": "gltf" }
+      }
+    }
+  ]
+}
