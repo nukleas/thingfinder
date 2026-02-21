@@ -3,6 +3,9 @@ import type { Schema } from 'conf';
 export interface ThingfinderConfig {
   downloadDir: string;
   'thingiverse.apiKey': string;
+  'sketchfab.apiKey': string;
+  'myminifactory.apiKey': string;
+  'cults3d.apiKey': string;
   preferredFormats: string[];
 }
 
@@ -12,6 +15,18 @@ export const configSchema: Schema<ThingfinderConfig> = {
     default: '.',
   },
   'thingiverse.apiKey': {
+    type: 'string',
+    default: '',
+  },
+  'sketchfab.apiKey': {
+    type: 'string',
+    default: '',
+  },
+  'myminifactory.apiKey': {
+    type: 'string',
+    default: '',
+  },
+  'cults3d.apiKey': {
     type: 'string',
     default: '',
   },
@@ -25,6 +40,9 @@ export const configSchema: Schema<ThingfinderConfig> = {
 export const configKeys = [
   'downloadDir',
   'thingiverse.apiKey',
+  'sketchfab.apiKey',
+  'myminifactory.apiKey',
+  'cults3d.apiKey',
   'preferredFormats',
 ] as const;
 
