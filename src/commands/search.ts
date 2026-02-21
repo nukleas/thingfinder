@@ -78,6 +78,14 @@ export function createSearchCommand(): Command {
         console.log(formatResultsTable(deduplicated));
         console.log();
         console.log(`${deduplicated.length} results from ${available.length} source(s)`);
+
+        // Hint about unconfigured sources
+        const all = registry.getAll();
+        const unconfigured = all.filter(p => !p.isAvailable());
+        if (unconfigured.length > 0) {
+          const names = unconfigured.map(p => p.name).join(', ');
+          logger.info(`Tip: ${names} not searched (API key not configured). Run: thingfinder config set <source>.apiKey <key>`);
+        }
       }
     });
 }
