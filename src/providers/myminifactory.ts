@@ -6,24 +6,24 @@ import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './t
 
 interface MMFSearchResponse {
   total_count: number;
-  items: MMFObject[];
+  items?: MMFObject[];
 }
 
 interface MMFObject {
   id: number;
   url: string;
   name: string;
-  views: number;
-  likes: number;
+  views?: number;
+  likes?: number;
   published_at: string;
-  designer: {
+  designer?: {
     username: string;
     name: string;
   };
-  images: Array<{
+  images?: Array<{
     thumbnail?: { url: string };
   }>;
-  files: MMFFile[];
+  files?: MMFFile[];
 }
 
 interface MMFFile {
@@ -60,8 +60,9 @@ export class MyMiniFactoryProvider implements SourceProvider {
   }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
+    const apiKey = this.getApiKey();
+    if (!apiKey) throw new AuthError('myminifactory');
     const client = this.createClient();
-    const apiKey = this.getApiKey()!;
     const page = options.page ?? 1;
     const perPage = Math.min(options.pageSize ?? 20, 30);
 
@@ -75,7 +76,7 @@ export class MyMiniFactoryProvider implements SourceProvider {
     return (resp.items ?? []).map(item => ({
       id: String(item.id),
       name: item.name,
-      creator: item.designer?.name || item.designer?.username || 'Unknown',
+      creator: item.designer?.name ?? item.designer?.username ?? 'Unknown',
       url: item.url,
       thumbnailUrl: item.images?.[0]?.thumbnail?.url,
       likes: item.likes ?? 0,
@@ -86,8 +87,9 @@ export class MyMiniFactoryProvider implements SourceProvider {
   }
 
   async getFiles(modelId: string): Promise<ModelFile[]> {
+    const apiKey = this.getApiKey();
+    if (!apiKey) throw new AuthError('myminifactory');
     const client = this.createClient();
-    const apiKey = this.getApiKey()!;
 
     const obj = await client.get<MMFObject>(`/objects/${modelId}`, {
       key: apiKey,

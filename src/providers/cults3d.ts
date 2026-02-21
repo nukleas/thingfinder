@@ -104,8 +104,9 @@ export class Cults3dProvider implements SourceProvider {
       }));
   }
 
-  async getFiles(_modelId: string): Promise<ModelFile[]> {
-    return [];
+  getFiles(_modelId: string): Promise<ModelFile[]> {
+    // Cults3D does not allow file downloads via API
+    return Promise.resolve([]);
   }
 
   resolveUrl(url: string): string | null {
