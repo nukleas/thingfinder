@@ -29,6 +29,7 @@ export interface ModelFile {
 
 export interface SourceProvider {
   readonly name: string;
+  readonly isBrowseOnly?: boolean;
   search(options: SearchOptions): Promise<SearchResult[]>;
   getFiles(modelId: string): Promise<ModelFile[]>;
   resolveUrl(url: string): string | null;
