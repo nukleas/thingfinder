@@ -71,4 +71,44 @@ describe('MCP Server', () => {
     expect(parsed).toHaveProperty('results');
     expect(parsed).toHaveProperty('errors');
   });
+
+  it('should handle list_files tool', async () => {
+    const server = createServer();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+
+    const result = await client.callTool({
+      name: 'list_files',
+      arguments: { modelId: '123', source: 'thangs' },
+    });
+
+    expect(result.content).toHaveLength(1);
+    const content = result.content[0];
+    expect(content).toHaveProperty('type', 'text');
+    const parsed = JSON.parse((content as { type: 'text'; text: string }).text);
+    expect(Array.isArray(parsed)).toBe(true);
+  });
+
+  it('should handle list_files for unknown source', async () => {
+    const server = createServer();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+
+    const result = await client.callTool({
+      name: 'list_files',
+      arguments: { modelId: '123', source: 'nonexistent' },
+    });
+
+    expect(result.isError).toBe(true);
+  });
 });
