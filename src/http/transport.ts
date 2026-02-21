@@ -31,7 +31,7 @@ export class NativeTransport implements Transport {
 
 /** Transport using impit to bypass Cloudflare TLS fingerprinting. */
 export class ImpitTransport implements Transport {
-  private impit = new Impit({ browser: 'chrome' });
+  private readonly impit = new Impit({ browser: 'chrome' });
 
   async fetch(url: string, init?: TransportInit): Promise<TransportResponse> {
     const response = await this.impit.fetch(url, init as import('impit').RequestInit);

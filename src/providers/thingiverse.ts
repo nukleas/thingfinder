@@ -32,7 +32,7 @@ export class ThingiverseProvider implements SourceProvider {
     const envKey = process.env.THINGFINDER_THINGIVERSE_API_KEY;
     if (envKey) return envKey;
 
-    const configKey = getConfigValue('thingiverse.apiKey') as string;
+    const configKey = getConfigValue('thingiverse.apiKey');
     if (configKey) return configKey;
 
     return undefined;

@@ -41,18 +41,19 @@ export class MyMiniFactoryProvider implements SourceProvider {
     const envKey = process.env.THINGFINDER_MYMINIFACTORY_API_KEY;
     if (envKey) return envKey;
 
-    const configKey = getConfigValue('myminifactory.apiKey') as string;
+    const configKey = getConfigValue('myminifactory.apiKey');
     if (configKey) return configKey;
 
     return undefined;
   }
 
-  private createClient(): HttpClient {
+  private requireApiKey(): string {
     const apiKey = this.getApiKey();
-    if (!apiKey) {
-      throw new AuthError('myminifactory');
-    }
+    if (!apiKey) throw new AuthError('myminifactory');
+    return apiKey;
+  }
 
+  private createClient(): HttpClient {
     return new HttpClient({
       baseUrl: 'https://www.myminifactory.com/api/v2',
       providerName: 'myminifactory',
@@ -60,8 +61,7 @@ export class MyMiniFactoryProvider implements SourceProvider {
   }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
-    const apiKey = this.getApiKey();
-    if (!apiKey) throw new AuthError('myminifactory');
+    const apiKey = this.requireApiKey();
     const client = this.createClient();
     const page = options.page ?? 1;
     const perPage = Math.min(options.pageSize ?? 20, 30);
@@ -87,8 +87,7 @@ export class MyMiniFactoryProvider implements SourceProvider {
   }
 
   async getFiles(modelId: string): Promise<ModelFile[]> {
-    const apiKey = this.getApiKey();
-    if (!apiKey) throw new AuthError('myminifactory');
+    const apiKey = this.requireApiKey();
     const client = this.createClient();
 
     const obj = await client.get<MMFObject>(`/objects/${modelId}`, {

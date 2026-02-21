@@ -1,6 +1,6 @@
 import cliProgress from 'cli-progress';
 
-export function createProgressBar(filename: string) {
+export function createProgressBar(filename: string): cliProgress.SingleBar {
   const bar = new cliProgress.SingleBar({
     format: `  ${filename} [{bar}] {percentage}% | {value}/{total} bytes`,
     barCompleteChar: '\u2588',

@@ -128,7 +128,7 @@ interface DownloadLinkResponse {
 
 export class PrintablesProvider implements SourceProvider {
   readonly name = 'printables';
-  private client: HttpClient;
+  private readonly client: HttpClient;
 
   constructor() {
     this.client = new HttpClient({

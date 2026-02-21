@@ -14,7 +14,7 @@ function formatSize(bytes?: number): string {
 }
 
 export async function selectModel(results: SearchResult[]): Promise<SearchResult | null> {
-  const choices = results.map(r => ({
+  const choices: Array<{ name: string; value: SearchResult | null; description: string }> = results.map(r => ({
     name: `[${r.source}] ${truncate(r.name, 50)} by ${r.creator}`,
     value: r,
     description: r.url,
@@ -22,7 +22,7 @@ export async function selectModel(results: SearchResult[]): Promise<SearchResult
 
   choices.push({
     name: 'Cancel',
-    value: null as unknown as SearchResult,
+    value: null,
     description: 'Exit without downloading',
   });
 

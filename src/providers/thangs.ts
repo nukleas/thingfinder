@@ -1,6 +1,5 @@
 import { HttpClient } from '../http/client.js';
-import { ImpitTransport } from '../http/transport.js';
-import type { TransportResponse } from '../http/transport.js';
+import { ImpitTransport, type TransportResponse } from '../http/transport.js';
 import type { ModelFile, SearchOptions, SearchResult, SourceProvider } from './types.js';
 
 interface ThangsSearchResponse {
@@ -38,7 +37,7 @@ interface ThangsModelPart {
 
 export class ThangsProvider implements SourceProvider {
   readonly name = 'thangs';
-  private client: HttpClient;
+  private readonly client: HttpClient;
 
   constructor() {
     this.client = new HttpClient({

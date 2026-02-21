@@ -1,5 +1,5 @@
 import Conf from 'conf';
-import { configSchema, type ThingfinderConfig } from './schema.js';
+import { configSchema, type ConfigKey, type ThingfinderConfig } from './schema.js';
 
 let store: Conf<ThingfinderConfig> | null = null;
 
@@ -11,15 +11,15 @@ export function getStore(): Conf<ThingfinderConfig> {
   return store;
 }
 
-export function getConfigValue(key: string): unknown {
-  return getStore().get(key as keyof ThingfinderConfig);
+export function getConfigValue<K extends ConfigKey>(key: K): ThingfinderConfig[K] {
+  return getStore().get(key);
 }
 
-export function setConfigValue(key: string, value: unknown) {
+export function setConfigValue(key: ConfigKey, value: string): void {
   const s = getStore();
-  if (key === 'preferredFormats' && typeof value === 'string') {
-    s.set(key as keyof ThingfinderConfig, value.split(',').map(v => v.trim()) as never);
+  if (key === 'preferredFormats') {
+    s.set(key, value.split(',').map(v => v.trim()));
   } else {
-    s.set(key as keyof ThingfinderConfig, value as never);
+    s.set(key, value);
   }
 }

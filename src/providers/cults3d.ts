@@ -52,7 +52,7 @@ export class Cults3dProvider implements SourceProvider {
     const envKey = process.env.THINGFINDER_CULTS3D_API_KEY;
     if (envKey) return envKey;
 
-    const configKey = getConfigValue('cults3d.apiKey') as string;
+    const configKey = getConfigValue('cults3d.apiKey');
     if (configKey) return configKey;
 
     return undefined;

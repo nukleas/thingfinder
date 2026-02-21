@@ -1,10 +1,10 @@
 let verbose = false;
 
-export function setVerbose(v: boolean) {
+export function setVerbose(v: boolean): void {
   verbose = v;
 }
 
-export function isVerbose() {
+export function isVerbose(): boolean {
   return verbose;
 }
 

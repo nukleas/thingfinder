@@ -2,9 +2,9 @@ import { logger } from '../logger.js';
 import type { SearchOptions, SearchResult, SourceProvider } from './types.js';
 
 export class ProviderRegistry {
-  private providers: Map<string, SourceProvider> = new Map();
+  private readonly providers: Map<string, SourceProvider> = new Map();
 
-  register(provider: SourceProvider) {
+  register(provider: SourceProvider): void {
     this.providers.set(provider.name, provider);
   }
 

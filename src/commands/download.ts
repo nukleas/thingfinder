@@ -17,7 +17,7 @@ export function createDownloadCommand(): Command {
     .option('-a, --all', 'Download all files without prompting')
     .option('-f, --format <formats...>', 'Only download these file formats (e.g. stl 3mf)')
     .action(async (url: string, options: { output?: string; all?: boolean; format?: string[] }) => {
-      const outputDir = options.output ?? (getConfigValue('downloadDir') as string | undefined) ?? '.';
+      const outputDir = options.output ?? getConfigValue('downloadDir');
 
       // Check if it's a direct file URL
       if (/\.(stl|3mf|obj|step|gcode|zip)$/i.test(url)) {

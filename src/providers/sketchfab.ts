@@ -41,7 +41,7 @@ export class SketchfabProvider implements SourceProvider {
     const envKey = process.env.THINGFINDER_SKETCHFAB_API_KEY;
     if (envKey) return envKey;
 
-    const configKey = getConfigValue('sketchfab.apiKey') as string;
+    const configKey = getConfigValue('sketchfab.apiKey');
     if (configKey) return configKey;
 
     return undefined;
