@@ -4,9 +4,9 @@
 [![npm version](https://img.shields.io/npm/v/thingfinder)](https://www.npmjs.com/package/thingfinder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-CLI tool for searching and downloading 3D printing files across multiple repositories.
+CLI tool, library, and MCP server for searching and downloading 3D printing files across multiple repositories.
 
-Search Thingiverse, Printables, and Thangs from a single command. No more opening three browser tabs.
+Search Thingiverse, Printables, and Thangs from a single command. No more opening three browser tabs. Use it from the terminal, import it as a library, or connect it to AI agents via MCP.
 
 ## Install
 
@@ -146,6 +146,74 @@ Commands:
 | `-o, --output <dir>` | Download directory |
 | `-a, --all` | Download all files without prompting |
 | `-f, --format <formats...>` | Only download these file formats |
+
+## MCP Server
+
+Thingfinder includes a [Model Context Protocol](https://modelcontextprotocol.io/) server, allowing AI agents (Claude, etc.) to search and download 3D models.
+
+### Setup with Claude Code
+
+```bash
+# Build first
+npm run build
+
+# Add to Claude Code project config (~/.claude.json)
+claude mcp add thingfinder node /path/to/thingfinder/dist/mcp.js
+```
+
+Or manually add to your project's `mcpServers` in `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "thingfinder": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/thingfinder/dist/mcp.js"]
+    }
+  }
+}
+```
+
+### MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_sources` | List all available 3D model providers and their status |
+| `search_models` | Search for models across providers (with optional source, sort, limit) |
+| `list_files` | List downloadable files for a specific model |
+| `download_files` | Download model files (with optional format filtering) |
+
+## Library
+
+Use thingfinder programmatically in your own Node.js projects:
+
+```bash
+npm install thingfinder
+```
+
+```typescript
+import { searchModels, listFiles, downloadModel, listSources } from 'thingfinder/lib';
+
+// List available providers
+const sources = listSources();
+
+// Search for models
+const { results, errors } = await searchModels('benchy', {
+  sources: ['printables'],
+  sort: 'popular',
+  limit: 5,
+});
+
+// List files for a model
+const files = await listFiles('694802', 'printables');
+
+// Download model files
+const { files: downloaded } = await downloadModel('694802', 'printables', {
+  outputDir: './downloads',
+  formats: ['stl', '3mf'],
+});
+```
 
 ## Error Handling
 

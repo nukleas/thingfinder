@@ -1,7 +1,7 @@
 {
   "name": "thingfinder",
   "version": "0.1.0",
-  "description": "CLI tool for searching and downloading 3D printing files across multiple repositories",
+  "description": "CLI, library, and MCP server for searching and downloading 3D printing files across multiple repositories",
   "type": "module",
   "bin": {
     "thingfinder": "./dist/index.js",
@@ -33,7 +33,10 @@
     "thingiverse",
     "printables",
     "thangs",
-    "cli"
+    "cli",
+    "mcp",
+    "model-context-protocol",
+    "ai-tools"
   ],
   "author": "Nader Heidari",
   "license": "MIT",
