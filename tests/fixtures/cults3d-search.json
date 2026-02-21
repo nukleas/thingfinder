@@ -1,0 +1,37 @@
+{
+  "data": {
+    "creationsSearchBatch": {
+      "total": 523,
+      "results": [
+        {
+          "name": "Dragon Figurine",
+          "shortUrl": "https://cults3d.com/en/3d-model/art/dragon-figurine",
+          "illustrationImageUrl": "https://files.cults3d.com/uploads/dragon-thumb.jpg",
+          "publishedAt": "2024-03-15T12:00:00Z",
+          "viewsCount": 1200,
+          "likesCount": 85,
+          "downloadsCount": 340,
+          "price": { "cents": 0 },
+          "creator": {
+            "nick": "dragonmaker",
+            "shortUrl": "https://cults3d.com/en/users/dragonmaker"
+          }
+        },
+        {
+          "name": "Premium Castle",
+          "shortUrl": "https://cults3d.com/en/3d-model/architecture/premium-castle",
+          "illustrationImageUrl": "https://files.cults3d.com/uploads/castle-thumb.jpg",
+          "publishedAt": "2024-04-01T09:00:00Z",
+          "viewsCount": 800,
+          "likesCount": 40,
+          "downloadsCount": 120,
+          "price": { "cents": 299 },
+          "creator": {
+            "nick": "castlebuilder",
+            "shortUrl": "https://cults3d.com/en/users/castlebuilder"
+          }
+        }
+      ]
+    }
+  }
+}
