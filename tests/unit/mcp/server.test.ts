@@ -48,4 +48,27 @@ describe('MCP Server', () => {
     expect(parsed[0]).toEqual({ name: 'thangs', available: true, isBrowseOnly: false });
     expect(parsed[1]).toEqual({ name: 'cults3d', available: false, isBrowseOnly: true });
   });
+
+  it('should handle search_models tool', async () => {
+    const server = createServer();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+
+    const result = await client.callTool({
+      name: 'search_models',
+      arguments: { query: 'raspberry pi' },
+    });
+
+    expect(result.content).toHaveLength(1);
+    const content = result.content[0];
+    expect(content).toHaveProperty('type', 'text');
+    const parsed = JSON.parse((content as { type: 'text'; text: string }).text);
+    expect(parsed).toHaveProperty('results');
+    expect(parsed).toHaveProperty('errors');
+  });
 });
