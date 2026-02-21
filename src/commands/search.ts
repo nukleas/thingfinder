@@ -5,17 +5,8 @@ import { selectModel, selectFiles } from '../ui/prompts.js';
 import { downloadFiles } from '../download/manager.js';
 import { createSpinner } from '../ui/spinner.js';
 import { logger } from '../logger.js';
+import { searchModels } from '../lib/search.js';
 import type { SearchResult } from '../providers/types.js';
-
-function deduplicateResults(results: SearchResult[]): SearchResult[] {
-  const seen = new Set<string>();
-  return results.filter(r => {
-    const key = r.url.toLowerCase().replace(/\/$/, '');
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
 
 export function createSearchCommand(): Command {
   return new Command('search')
@@ -47,24 +38,19 @@ export function createSearchCommand(): Command {
       const spinner = createSpinner(`Searching for "${query}"...`);
       spinner.start();
 
-      const { results, errors } = await registry.searchAll(
-        {
-          query,
-          pageSize: parseInt(options.limit ?? '20', 10),
-          sort: (options.sort ?? 'relevant') as 'relevant' | 'popular' | 'newest',
-        },
-        options.source,
-      );
+      const { results: deduplicated, errors } = await searchModels(query, {
+        limit: parseInt(options.limit ?? '20', 10),
+        sort: (options.sort ?? 'relevant') as 'relevant' | 'popular' | 'newest',
+        sources: options.source,
+      });
 
       spinner.stop();
 
       if (errors.length > 0) {
         for (const e of errors) {
-          logger.warn(`${e.provider}: ${e.error.message}`);
+          logger.warn(`${e.provider}: ${e.message}`);
         }
       }
-
-      const deduplicated = deduplicateResults(results);
 
       if (deduplicated.length === 0) {
         logger.info('No results found.');
