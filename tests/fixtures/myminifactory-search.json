@@ -1,0 +1,64 @@
+{
+  "total_count": 150,
+  "items": [
+    {
+      "id": 12345,
+      "url": "https://www.myminifactory.com/object/3d-print-benchy-12345",
+      "name": "3D Benchy",
+      "views": 5000,
+      "likes": 200,
+      "published_at": "2024-01-15T10:30:00Z",
+      "designer": {
+        "username": "benchymaker",
+        "name": "Benchy Maker",
+        "profile_url": "https://www.myminifactory.com/users/benchymaker",
+        "avatar_url": "https://cdn.myminifactory.com/avatars/benchymaker.jpg"
+      },
+      "images": [
+        { "thumbnail": { "url": "https://cdn.myminifactory.com/thumbnails/12345.jpg" } }
+      ],
+      "files": [
+        {
+          "id": 67890,
+          "filename": "benchy.stl",
+          "description": "Main model",
+          "size": "1048576",
+          "download_url": "https://www.myminifactory.com/download/12345?file=67890"
+        }
+      ]
+    },
+    {
+      "id": 67890,
+      "url": "https://www.myminifactory.com/object/3d-print-dragon-67890",
+      "name": "Dragon Figurine",
+      "views": 1200,
+      "likes": 80,
+      "published_at": "2024-03-20T08:00:00Z",
+      "designer": {
+        "username": "dragonfan",
+        "name": "Dragon Fan",
+        "profile_url": "https://www.myminifactory.com/users/dragonfan",
+        "avatar_url": "https://cdn.myminifactory.com/avatars/dragonfan.jpg"
+      },
+      "images": [
+        { "thumbnail": { "url": "https://cdn.myminifactory.com/thumbnails/67890.jpg" } }
+      ],
+      "files": [
+        {
+          "id": 11111,
+          "filename": "dragon_body.stl",
+          "description": "Body",
+          "size": "2097152",
+          "download_url": "https://www.myminifactory.com/download/67890?file=11111"
+        },
+        {
+          "id": 22222,
+          "filename": "dragon_wings.3mf",
+          "description": "Wings",
+          "size": "512000",
+          "download_url": "https://www.myminifactory.com/download/67890?file=22222"
+        }
+      ]
+    }
+  ]
+}
