@@ -36,13 +36,22 @@ export function createDownloadCommand(): Command {
 
       if (!resolved) {
         logger.error('Could not match URL to any known provider.');
-        logger.info('Supported: thingiverse.com, printables.com, thangs.com');
+        logger.info('Supported: thingiverse.com, printables.com, thangs.com, sketchfab.com, myminifactory.com, cults3d.com');
         logger.info('You can also provide a direct .stl/.3mf file URL.');
         process.exit(1);
       }
 
       const { provider, modelId } = resolved;
       logger.debug(`Resolved to ${provider.name} model ${modelId}`);
+
+      if (provider.isBrowseOnly) {
+        logger.info(`${provider.name} does not support direct downloads.`);
+        logger.info(`Opening ${url} in browser...`);
+        const { exec } = await import('node:child_process');
+        const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+        exec(`${cmd} ${JSON.stringify(url)}`);
+        return;
+      }
 
       const spinner = createSpinner(`Fetching files from ${provider.name}...`);
       spinner.start();

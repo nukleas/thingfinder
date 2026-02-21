@@ -22,7 +22,7 @@ export function createSearchCommand(): Command {
     .description('Search for 3D models across multiple sources')
     .argument('<query>', 'Search query')
     .option('-i, --interactive', 'Interactive mode: select and download files')
-    .option('-s, --source <sources...>', 'Only search specific sources (thangs, printables, thingiverse)')
+    .option('-s, --source <sources...>', 'Only search specific sources (thangs, printables, thingiverse, sketchfab, myminifactory, cults3d)')
     .option('--sort <order>', 'Sort order: relevant, popular, newest', 'relevant')
     .option('-n, --limit <count>', 'Max results per source', '20')
     .option('-o, --output <dir>', 'Download directory')
@@ -90,6 +90,14 @@ async function interactiveMode(results: SearchResult[], outputDir?: string, form
   const provider = registry.getProvider(selected.source);
   if (!provider) {
     logger.error(`Provider ${selected.source} not found`);
+    return;
+  }
+
+  if (provider.isBrowseOnly) {
+    logger.info(`Opening ${selected.url} in browser...`);
+    const { exec } = await import('node:child_process');
+    const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+    exec(`${cmd} ${JSON.stringify(selected.url)}`);
     return;
   }
 
