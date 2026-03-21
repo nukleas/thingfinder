@@ -1,23 +1,5 @@
 import type { SearchResult } from '../providers/types.js';
-
-function truncate(str: string, len: number): string {
-  if (str.length <= len) return str;
-  return str.slice(0, len - 1) + '\u2026';
-}
-
-function padRight(str: string, len: number): string {
-  return str + ' '.repeat(Math.max(0, len - str.length));
-}
-
-function padLeft(str: string, len: number): string {
-  return ' '.repeat(Math.max(0, len - str.length)) + str;
-}
-
-function formatNumber(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'k';
-  return String(n);
-}
+import { truncate, formatNumber, padLeft, padRight } from './format.js';
 
 export function formatResultsTable(results: SearchResult[]): string {
   if (results.length === 0) {

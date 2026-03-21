@@ -1,17 +1,6 @@
 import { select, checkbox } from '@inquirer/prompts';
 import type { SearchResult, ModelFile } from '../providers/types.js';
-
-function truncate(str: string, len: number): string {
-  if (str.length <= len) return str;
-  return str.slice(0, len - 1) + '\u2026';
-}
-
-function formatSize(bytes?: number): string {
-  if (!bytes) return '';
-  if (bytes >= 1_000_000) return ` (${(bytes / 1_000_000).toFixed(1)} MB)`;
-  if (bytes >= 1_000) return ` (${(bytes / 1_000).toFixed(1)} KB)`;
-  return ` (${bytes} B)`;
-}
+import { truncate, formatSize } from './format.js';
 
 export async function selectModel(results: SearchResult[]): Promise<SearchResult | null> {
   const choices: Array<{ name: string; value: SearchResult | null; description: string }> = results.map(r => ({

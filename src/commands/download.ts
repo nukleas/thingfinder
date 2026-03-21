@@ -71,7 +71,7 @@ export function createDownloadCommand(): Command {
 
       let filesToDownload = filtered;
       if (!options.all && filtered.length > 1) {
-        filesToDownload = await selectFiles(files);
+        filesToDownload = await selectFiles(filtered);
         if (filesToDownload.length === 0) {
           logger.info('No files selected.');
           return;

@@ -1,5 +1,5 @@
 import { createWriteStream } from 'node:fs';
-import { rename, unlink } from 'node:fs/promises';
+import { rename } from 'node:fs/promises';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { DownloadError } from '../errors.js';
@@ -73,13 +73,5 @@ export async function downloadFile(
     bar?.stop();
     // Leave .partial file for retry
     throw new DownloadError(url, `Download interrupted: ${(error as Error).message}`);
-  }
-}
-
-export async function cleanupPartial(destPath: string): Promise<void> {
-  try {
-    await unlink(destPath + '.partial');
-  } catch {
-    // Ignore if not exists
   }
 }
