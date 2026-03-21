@@ -4,23 +4,28 @@
 [![npm version](https://img.shields.io/npm/v/thingfinder)](https://www.npmjs.com/package/thingfinder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-CLI tool, library, and MCP server for searching and downloading 3D printing files across multiple repositories.
+The only CLI tool that searches multiple 3D printing repositories at once. Also available as a library and MCP server.
 
-Search Thingiverse, Printables, and Thangs from a single command. No more opening three browser tabs. Use it from the terminal, import it as a library, or connect it to AI agents via MCP.
+Search **Thingiverse**, **Printables**, and **Thangs** from a single command. No more opening three browser tabs. Use it from the terminal, import it as a library, or connect it to AI agents via MCP.
 
-## Install
+## Quick Start
 
 ```bash
+# Run instantly with npx (no install needed)
+npx thingfinder search "benchy"
+
+# Or install globally
 npm install -g thingfinder
 ```
 
-Or run directly:
-
-```bash
-npx thingfinder search "benchy"
-```
-
 Requires Node.js >= 20.
+
+## Why thingfinder?
+
+- **One search, multiple sources** - Query Thangs, Printables, and Thingiverse simultaneously
+- **Terminal-native** - Fits into scripting and automation workflows
+- **No browser needed** - Search and download without leaving your terminal
+- **Interactive or scripted** - Use `-i` for interactive file selection, or `--all` for batch downloads
 
 ## Usage
 
