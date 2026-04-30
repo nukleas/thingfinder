@@ -6,11 +6,11 @@ import downloadFixture from '../../fixtures/printables-download.json';
 
 vi.mock('../../../src/http/client.js', () => {
   return {
-    HttpClient: vi.fn().mockImplementation(() => ({
-      get: vi.fn(),
-      post: vi.fn(),
-      fetchRaw: vi.fn(),
-    })),
+    HttpClient: class {
+      get = vi.fn();
+      post = vi.fn();
+      fetchRaw = vi.fn();
+    },
   };
 });
 

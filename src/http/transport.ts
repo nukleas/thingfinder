@@ -24,7 +24,7 @@ export interface Transport {
 /** Default transport wrapping globalThis.fetch. */
 export class NativeTransport implements Transport {
   async fetch(url: string, init?: TransportInit): Promise<TransportResponse> {
-    const response = await globalThis.fetch(url, init as globalThis.RequestInit);
+    const response = await globalThis.fetch(url, init);
     return response;
   }
 }
@@ -35,6 +35,6 @@ export class ImpitTransport implements Transport {
 
   async fetch(url: string, init?: TransportInit): Promise<TransportResponse> {
     const response = await this.impit.fetch(url, init as import('impit').RequestInit);
-    return response as TransportResponse;
+    return response;
   }
 }

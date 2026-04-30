@@ -6,8 +6,8 @@ import thangsDetailFixture from '../../fixtures/thangs-model-detail.json';
 const mockFetch = vi.fn();
 
 vi.mock('../../../src/http/transport.js', () => ({
-  NativeTransport: vi.fn().mockImplementation(() => ({ fetch: mockFetch })),
-  ImpitTransport: vi.fn().mockImplementation(() => ({ fetch: mockFetch })),
+  NativeTransport: class { fetch = mockFetch; },
+  ImpitTransport: class { fetch = mockFetch; },
 }));
 
 describe('ThangsProvider', () => {
