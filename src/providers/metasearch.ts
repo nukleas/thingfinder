@@ -6,19 +6,21 @@ import { getConfigValue } from '../config/store.js';
 import type { SearchOptions, SearchResult, SourceProvider } from './types.js';
 import type { ConfigKey } from '../config/schema.js';
 
+export interface ParsedLink {
+  url: string;
+  title: string;
+}
+
 export interface MetaSearchSpec {
   name: string;
   searchUrl: (query: string) => string;
   selfHost: RegExp;
+  /** Site-specific HTML parser; defaults to the generic outbound-link heuristic. */
+  parse?: (html: string, spec: MetaSearchSpec) => ParsedLink[];
 }
 
 const DEFAULT_UA =
   'Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0';
-
-interface ParsedLink {
-  url: string;
-  title: string;
-}
 
 /**
  * Heuristic: meta-search result pages list outbound links to the hosting
@@ -61,6 +63,19 @@ export function parseOutboundLinks(html: string, selfHost: RegExp): ParsedLink[]
   return links;
 }
 
+interface FlareSolverrSolution {
+  status?: string;
+  status_code?: number;
+  response?: string;
+  cookies?: Array<{ name: string; value: string }>;
+}
+
+interface FlareSolverrResponse {
+  status: string;
+  message?: string;
+  solution?: FlareSolverrSolution;
+}
+
 export class MetaSearchProvider implements SourceProvider {
   readonly name: string;
   readonly isBrowseOnly = true;
@@ -94,29 +109,87 @@ export class MetaSearchProvider implements SourceProvider {
     return headers;
   }
 
-  async search(options: SearchOptions): Promise<SearchResult[]> {
-    const resp = await this.client.fetchRaw(this.spec.searchUrl(encodeURIComponent(options.query)));
+  private getFlareSolverrUrl(): string {
+    return getConfigValue('flaresolverr.url');
+  }
 
-    if (resp.status === 403) {
+  private async fetchViaSolver(targetUrl: string): Promise<string> {
+    const solverUrl = this.getFlareSolverrUrl();
+    const resp = await fetch(solverUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: 'request.get',
+        url: targetUrl,
+        maxTimeout: 120000,
+        session: `thingfinder-${this.name}-${Date.now()}`,
+      }),
+      signal: AbortSignal.timeout(150_000),
+    });
+
+    if (!resp.ok) {
+      let reason = `HTTP ${resp.status}`;
+      try {
+        const err = (await resp.json()) as FlareSolverrResponse;
+        if (err.message) reason = `${resp.status}: ${err.message}`;
+      } catch {
+        // body not JSON; keep the status code
+      }
+      throw new ProviderError(this.name, `FlareSolverr request failed: ${reason}`);
+    }
+
+    const data = (await resp.json()) as FlareSolverrResponse;
+    const solution = data.solution;
+
+    if (data.status !== 'ok' || !solution?.response) {
+      const reason = data.message ?? 'no solution returned';
       throw new ProviderError(
         this.name,
-        `Cloudflare/bot challenge blocked the search (HTTP 403). Open ${this.spec.searchUrl('x')} in your browser, then copy the cf_clearance cookie and User-Agent into: thingfinder config set ${this.name}.cfClearance <value> (must be from the same network).`,
+        `FlareSolverr could not fetch the page: ${reason}. If the site rate-limits the solver's IP, retry later or set ${this.name}.cfClearance.`,
       );
     }
-    if (!resp.ok) {
-      throw new ProviderError(this.name, `Search failed: HTTP ${resp.status} ${resp.statusText}`);
+
+    if ((solution.status_code ?? 200) >= 500) {
+      throw new ProviderError(
+        this.name,
+        `${this.name} returned HTTP ${solution.status_code} after passing the challenge — the site's backend is currently failing; try again later.`,
+      );
     }
 
-    const html = await resp.text();
+    return solution.response;
+  }
+
+  async search(options: SearchOptions): Promise<SearchResult[]> {
+    const targetUrl = this.spec.searchUrl(encodeURIComponent(options.query));
+
+    let html: string;
+    if (this.getFlareSolverrUrl()) {
+      html = await this.fetchViaSolver(targetUrl);
+    } else {
+      const resp = await this.client.fetchRaw(targetUrl);
+
+      if (resp.status === 403) {
+        throw new ProviderError(
+          this.name,
+          `Cloudflare/bot challenge blocked the search (HTTP 403). Set a FlareSolverr endpoint (thingfinder config set flaresolverr.url http://host:8192/v1) or supply a cf_clearance cookie: thingfinder config set ${this.name}.cfClearance <value> (must be from the same network).`,
+        );
+      }
+      if (!resp.ok) {
+        throw new ProviderError(this.name, `Search failed: HTTP ${resp.status} ${resp.statusText}`);
+      }
+
+      html = await resp.text();
+    }
 
     if (/just a moment|challenge-form|enable js and disable any ad blocker/i.test(html.slice(0, 4000))) {
       throw new ProviderError(
         this.name,
-        `Cloudflare challenge blocked the search. Open ${this.spec.searchUrl('x')} in your browser, then copy the cf_clearance cookie and User-Agent into: thingfinder config set ${this.name}.cfClearance <value> (must be from the same network).`,
+        `Cloudflare challenge page served. Set a FlareSolverr endpoint (thingfinder config set flaresolverr.url http://host:8192/v1) to solve it.`,
       );
     }
 
-    const links = parseOutboundLinks(html, this.spec.selfHost);
+    const parse = this.spec.parse ?? ((h: string, s: MetaSearchSpec) => parseOutboundLinks(h, s.selfHost));
+    const links = parse(html, this.spec);
     const limit = options.pageSize ?? 20;
 
     return links.slice(0, limit).map((link, i) => ({

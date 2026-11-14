@@ -12,6 +12,10 @@ export interface BrowserClearanceSection {
   cfClearance: string;
 }
 
+export interface FlareSolverrSection {
+  url: string;
+}
+
 export interface ThingfinderConfig {
   downloadDir: string;
   thingiverse: ApiKeySection;
@@ -21,6 +25,7 @@ export interface ThingfinderConfig {
   polypizza: ApiKeySection;
   stlfinder: BrowserClearanceSection;
   yeggi: BrowserClearanceSection;
+  flaresolverr: FlareSolverrSection;
   preferredFormats: string[];
 }
 
@@ -53,6 +58,13 @@ export const configSchema: Schema<ThingfinderConfig> = {
   polypizza: apiKeySection,
   stlfinder: clearanceSection,
   yeggi: clearanceSection,
+  flaresolverr: {
+    type: 'object',
+    properties: {
+      url: { type: 'string', default: '' },
+    },
+    default: { url: '' },
+  },
   preferredFormats: {
     type: 'array',
     items: { type: 'string' },
@@ -71,6 +83,7 @@ export const configKeys = [
   'stlfinder.cfClearance',
   'yeggi.userAgent',
   'yeggi.cfClearance',
+  'flaresolverr.url',
   'preferredFormats',
 ] as const;
 

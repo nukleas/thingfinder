@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MetaSearchProvider, parseOutboundLinks } from '../../../src/providers/metasearch.js';
 import { StlfinderProvider } from '../../../src/providers/stlfinder.js';
 
 const mockFetch = vi.fn();
+const mockConfigGet = vi.fn().mockReturnValue('');
 
 vi.mock('../../../src/http/transport.js', () => ({
   NativeTransport: class { fetch = mockFetch; },
@@ -10,7 +11,7 @@ vi.mock('../../../src/http/transport.js', () => ({
 }));
 
 vi.mock('../../../src/config/store.js', () => ({
-  getConfigValue: vi.fn().mockReturnValue(''),
+  getConfigValue: (...args: unknown[]) => mockConfigGet(...args),
 }));
 
 const sampleHtml = `
@@ -44,10 +45,16 @@ describe('parseOutboundLinks', () => {
 
 describe('StlfinderProvider', () => {
   let provider: StlfinderProvider;
+  const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     mockFetch.mockReset();
+    mockConfigGet.mockReturnValue('');
     provider = new StlfinderProvider();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
   });
 
   it('should be browse-only and available', () => {
@@ -56,7 +63,7 @@ describe('StlfinderProvider', () => {
     expect(provider.isAvailable()).toBe(true);
   });
 
-  it('should parse search page results', async () => {
+  it('should parse search page results via the generic outbound-link parser', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -65,11 +72,16 @@ describe('StlfinderProvider', () => {
       text: () => Promise.resolve(sampleHtml),
     });
 
-    const results = await provider.search({ query: 'benchy' });
+    const generic = new MetaSearchProvider({
+      name: 'testsearch',
+      searchUrl: q => `https://test.example/?q=${q}`,
+      selfHost: /test\.example$/,
+    });
+    const results = await generic.search({ query: 'benchy' });
 
     expect(results.length).toBeGreaterThan(0);
     expect(results[0]).toMatchObject({
-      source: 'stlfinder',
+      source: 'testsearch',
       url: expect.stringMatching(/^https?:\/\//),
     });
   });
@@ -86,7 +98,7 @@ describe('StlfinderProvider', () => {
     await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/cf_clearance/);
   });
 
-  it('should throw a Cloudflare hint on challenge HTML with 200', async () => {
+  it('should throw a solver hint on challenge HTML with 200', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -95,7 +107,86 @@ describe('StlfinderProvider', () => {
       text: () => Promise.resolve('<title>Just a moment...</title>'),
     });
 
-    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/cf_clearance/);
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/FlareSolverr/);
+  });
+
+  it('should parse card grids from the live search page format', async () => {
+    const cardHtml = `
+    <div class="masonry-grid">
+      <article class="card" style="animation-delay: 0ms;">
+        <div class="tilt-light"></div>
+        <a href="/model/actually-floating-benchy-attachment/6157305?q=benchy" class="card-img-wrap">
+          <img src="https://bamax.es/uploads_v2/615/actually-floating-benchy-attachment-N0p8PUDs_200.webp"
+               alt="Actually Floating Benchy (Attachment)" loading="lazy" width="280" height="200">
+        </a>
+        <div class="card-body"><h3>Actually Floating Benchy (Attachment)</h3></div>
+      </article>
+      <article class="card">
+        <a href="/model/benchy-the-jolly-printing-torture-test/123456" class="card-img-wrap">
+          <img src="x.webp" alt="3DBenchy - The jolly printing torture-test">
+        </a>
+      </article>
+    </div>`;
+    mockFetch.mockReset();
+    mockConfigGet.mockReturnValue('https://solver.example/v1');
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        status: 'ok',
+        message: 'Challenge solved!',
+        solution: { status: 'ok', status_code: 200, response: cardHtml },
+      }),
+    });
+
+    const results = await provider.search({ query: 'benchy' });
+
+    expect(results).toHaveLength(2);
+    expect(results[0]).toMatchObject({
+      source: 'stlfinder',
+      name: 'Actually Floating Benchy (Attachment)',
+      url: 'https://www.stlfinder.com/model/actually-floating-benchy-attachment/6157305',
+    });
+  });
+
+  it('should surface the site 500 verdict from the solver', async () => {
+    mockConfigGet.mockReturnValue('https://solver.example/v1');
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        status: 'ok',
+        solution: { status: 'ok', status_code: 500, response: '<html>500</html>' },
+      }),
+    });
+
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/HTTP 500/);
+  });
+
+  it('should surface solver failures with a hint', async () => {
+    mockConfigGet.mockReturnValue('https://solver.example/v1');
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        status: 'error',
+        message: 'Error solving the challenge. Timeout after 120.0 seconds.',
+      }),
+    });
+
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/FlareSolverr could not fetch/);
+  });
+
+  it('should surface the solver error body on non-2xx responses', async () => {
+    mockConfigGet.mockReturnValue('https://solver.example/v1');
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({
+        status: 'error',
+        message: 'Error: Error solving the challenge. Timeout after 150.0 seconds.',
+      }),
+    });
+
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/Timeout after 150/);
   });
 
   it('should reject fetchFile as browse-only', async () => {

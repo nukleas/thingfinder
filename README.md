@@ -108,10 +108,19 @@ thingfinder config path
 | **STLFinder** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
 | **Yeggi** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
 
-\* STLFinder and Yeggi sit behind Cloudflare bot challenges. The built-in
-browser-impersonation transport passes some networks; on others you need to
-supply a `cf_clearance` cookie + User-Agent from your own browser **on the same
-network**:
+\* STLFinder and Yeggi sit behind Cloudflare bot challenges that plain HTTP
+clients cannot pass. The recommended way is a **FlareSolverr** endpoint on your
+network (a headless browser that solves the challenge and returns the page):
+
+```bash
+thingfinder config set flaresolverr.url http://your-host:8192/v1
+```
+
+Searches then go through the solver automatically (fresh session per request,
+clear verdicts when a solver times out or the site's backend is down).
+
+Without a solver, these two sources only work with a `cf_clearance` cookie +
+User-Agent copied from your own browser **on the same network**:
 
 ```bash
 thingfinder config set stlfinder.cfClearance <cookie value>
@@ -120,7 +129,7 @@ thingfinder config set yeggi.cfClearance     <cookie value>
 thingfinder config set yeggi.userAgent       "<the User-Agent that got the cookie>"
 ```
 
-Without clearance, searching these two reports a clear warning and the other
+Without either, searching these two reports a clear warning and the other
 sources proceed normally.
 
 ### Poly Pizza Setup
