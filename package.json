@@ -1,6 +1,6 @@
 {
   "name": "thingfinder",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CLI, library, and MCP server for searching and downloading 3D printing files across multiple repositories",
   "type": "module",
   "bin": {
@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "prepare": "npm run build",
     "dev": "tsx src/index.ts",
     "lint": "eslint src/ tests/",
     "lint:fix": "eslint src/ tests/ --fix",
@@ -42,7 +43,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nukleas/thingfinder.git"
+    "url": "git+https://github.com/Whatsmename/thingfinder.git"
   },
   "homepage": "https://github.com/nukleas/thingfinder#readme",
   "bugs": {

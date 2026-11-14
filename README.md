@@ -11,14 +11,17 @@ Search **Thingiverse**, **Printables**, and **Thangs** from a single command. No
 ## Quick Start
 
 ```bash
-# Run instantly with npx (no install needed)
-npx thingfinder search "benchy"
-
-# Or install globally
-npm install -g thingfinder
+# Install this repo's build (all 11 sources incl. Poly Haven, AmbientCG,
+# Poly Pizza, and FlareSolverr-backed STLFinder/Yeggi):
+npm install -g github:Whatsmename/thingfinder
 ```
 
 Requires Node.js >= 20.
+
+Note: the `thingfinder` name on the npm registry is the upstream
+[nukleas/thingfinder](https://github.com/nukleas/thingfinder) build (v0.1.1,
+3 sources) and lags this repository; `npx thingfinder` / `npm i -g thingfinder`
+installs that older package, not the 11-source build described here.
 
 ## Why thingfinder?
 
@@ -220,10 +223,11 @@ Thingfinder includes a [Model Context Protocol](https://modelcontextprotocol.io/
 ### Setup with Claude Code
 
 ```bash
-# Build first
-npm run build
+# After a global install (npm install -g github:Whatsmename/thingfinder):
+claude mcp add thingfinder thingfinder-mcp
 
-# Add to Claude Code project config (~/.claude.json)
+# Or from a local clone:
+npm run build
 claude mcp add thingfinder node /path/to/thingfinder/dist/mcp.js
 ```
 
@@ -234,8 +238,7 @@ Or manually add to your project's `mcpServers` in `~/.claude.json`:
   "mcpServers": {
     "thingfinder": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/path/to/thingfinder/dist/mcp.js"]
+      "command": "thingfinder-mcp"
     }
   }
 }
