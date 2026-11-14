@@ -119,6 +119,20 @@ thingfinder config set flaresolverr.url http://your-host:8192/v1
 Searches then go through the solver automatically (fresh session per request,
 clear verdicts when a solver times out or the site's backend is down).
 
+**Rate limiting & backoff.** These two sources share a persistent per-site
+guard (state file next to your config). Yeggi defaults to a minimum of 20 s
+between requests; after a blocked attempt (403/challenge/solver timeout/site
+500) the provider retries once, then cools down — 15 minutes for yeggi, 5 for
+STLFinder — doubling per repeat up to 2 hours. During cooldown the source
+fails instantly with `Rate limited. Retry after Xs` and the other sources
+proceed. Tune per site:
+
+```bash
+thingfinder config set yeggi.minIntervalSeconds 60
+thingfinder config set yeggi.cooldownMinutes     30
+thingfinder config set stlfinder.minIntervalSeconds 5
+```
+
 Without a solver, these two sources only work with a `cf_clearance` cookie +
 User-Agent copied from your own browser **on the same network**:
 

@@ -55,6 +55,7 @@ tsup produces three entry points:
 
 Auth pattern: env var `THINGFINDER_<PROVIDER>_API_KEY` with config store fallback (`<provider>.apiKey`).
 Meta-search providers use `flaresolverr.url` (preferred, solver-backed fetch with fresh sessions) or `<provider>.cfClearance` / `<provider>.userAgent` to pass Cloudflare challenges.
+Per-site rate guard (src/providers/rate-guard.ts, state.json next to config): min-interval spacing + exponential cooldown after soft-blocks (403/challenge/solver-timeout/site-500, tagged via `ProviderError.rateLimited`); one in-process retry (`spec.retryDelayMs`) then `RateLimitError` with retry-after. Tune via `<provider>.minIntervalSeconds` / `<provider>.cooldownMinutes`.
 `MetaSearchProvider` (src/providers/metasearch.ts) is the shared scrape base — per-site `parse` hook; stlfinder parses its card grid (`/model/<slug>/<id>` anchors, img-alt titles); the generic outbound-link parser is the fallback.
 
 ## Code Style

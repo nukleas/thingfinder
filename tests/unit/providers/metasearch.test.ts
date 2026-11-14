@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { MetaSearchProvider, parseOutboundLinks } from '../../../src/providers/metasearch.js';
 import { StlfinderProvider } from '../../../src/providers/stlfinder.js';
 
@@ -201,5 +204,93 @@ describe('StlfinderProvider', () => {
     });
     expect(p.name).toBe('testsearch');
     expect(p.resolveUrl('https://anything')).toBeNull();
+  });
+});
+
+describe('meta-search rate guard', () => {
+  let stateDir: string;
+  const prevEnv = process.env.THINGFINDER_STATE_DIR;
+
+  const guarded = () =>
+    new MetaSearchProvider({
+      name: 'yeggiguard',
+      searchUrl: q => `https://www.yeggi.com/q/${q}/`,
+      selfHost: /yeggi\.com$/,
+      defaultMinIntervalSeconds: 20,
+      defaultCooldownMinutes: 15,
+      retryDelayMs: 0,
+    });
+
+  const blocked = {
+    ok: false,
+    status: 403,
+    statusText: 'Forbidden',
+    headers: { get: () => null },
+    text: () => Promise.resolve('blocked'),
+  };
+  const okPage = {
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    headers: { get: () => null },
+    text: () => Promise.resolve(sampleHtml),
+  };
+
+  beforeEach(() => {
+    mockFetch.mockReset();
+    mockConfigGet.mockReturnValue('');
+    stateDir = mkdtempSync(join(tmpdir(), 'tf-guard-'));
+    process.env.THINGFINDER_STATE_DIR = stateDir;
+  });
+
+  afterEach(() => {
+    rmSync(stateDir, { recursive: true, force: true });
+    if (prevEnv === undefined) delete process.env.THINGFINDER_STATE_DIR;
+    else process.env.THINGFINDER_STATE_DIR = prevEnv;
+  });
+
+  it('retries once, then engages a persistent cooldown', async () => {
+    mockFetch.mockResolvedValue(blocked);
+    const provider = guarded();
+
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(
+      /backing off 15m/,
+    );
+
+    // Cooldown is persisted: the next search rejects instantly with no fetch.
+    const callsBefore = mockFetch.mock.calls.length;
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/Retry after/);
+    expect(mockFetch.mock.calls.length).toBe(callsBefore);
+  });
+
+  it('keeps the underlying hint in the backoff message', async () => {
+    mockFetch.mockResolvedValue(blocked);
+    const provider = guarded();
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/cf_clearance/);
+  });
+
+  it('spaces requests by the minimum interval after a success', async () => {
+    mockFetch.mockResolvedValue(okPage);
+    const provider = guarded();
+
+    const first = await provider.search({ query: 'benchy' });
+    expect(first.length).toBeGreaterThan(0);
+
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/Retry after \d+s/);
+    expect(mockFetch.mock.calls.length).toBe(1);
+  });
+
+  it('resets the guard after a success clears the streak', async () => {
+    // First: blocked -> cooldown.
+    mockFetch.mockResolvedValue(blocked);
+    const provider = guarded();
+    await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/backing off/);
+
+    // Expiry: simulate cooldown passing by clearing state file.
+    rmSync(join(stateDir, 'state.json'), { force: true });
+
+    mockFetch.mockResolvedValue(okPage);
+    const results = await provider.search({ query: 'benchy' });
+    expect(results.length).toBeGreaterThan(0);
   });
 });

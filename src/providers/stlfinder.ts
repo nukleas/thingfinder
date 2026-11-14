@@ -43,6 +43,9 @@ export class StlfinderProvider extends MetaSearchProvider {
       searchUrl: q => `${ORIGIN}/3dmodels/${q}/`,
       selfHost: /stlfinder\.com$/,
       parse: parseStlfinderCards,
+      defaultMinIntervalSeconds: 0,
+      defaultCooldownMinutes: 5,
+      retryDelayMs: 0,
     });
   }
 }

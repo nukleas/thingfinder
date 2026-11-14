@@ -29,3 +29,10 @@ export function setConfigValue(key: ConfigKey, value: string): void {
     s.set(key as never, value as never);
   }
 }
+
+/** Positive-number config lookup; unset/0/invalid => undefined. */
+export function getConfigNumber(key: ConfigKey): number | undefined {
+  const raw = getConfigValue(key);
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}

@@ -6,6 +6,9 @@ export class ThingfinderError extends Error {
 }
 
 export class ProviderError extends ThingfinderError {
+  /** Set by providers when the failure looks rate-limit/block related. */
+  rateLimited = false;
+
   constructor(
     public readonly provider: string,
     message: string,
@@ -27,8 +30,12 @@ export class RateLimitError extends ProviderError {
   constructor(
     provider: string,
     public readonly retryAfterMs?: number,
+    message?: string,
   ) {
-    super(provider, `Rate limited${retryAfterMs ? `. Retry after ${Math.ceil(retryAfterMs / 1000)}s` : ''}`);
+    super(
+      provider,
+      message ?? `Rate limited${retryAfterMs ? `. Retry after ${Math.ceil(retryAfterMs / 1000)}s` : ''}`,
+    );
     this.name = 'RateLimitError';
   }
 }

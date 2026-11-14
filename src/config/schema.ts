@@ -10,6 +10,8 @@ export interface ApiKeySection {
 export interface BrowserClearanceSection {
   userAgent: string;
   cfClearance: string;
+  minIntervalSeconds: number;
+  cooldownMinutes: number;
 }
 
 export interface FlareSolverrSection {
@@ -42,8 +44,10 @@ const clearanceSection = {
   properties: {
     userAgent: { type: 'string', default: '' },
     cfClearance: { type: 'string', default: '' },
+    minIntervalSeconds: { type: 'number', default: 0 },
+    cooldownMinutes: { type: 'number', default: 0 },
   },
-  default: { userAgent: '', cfClearance: '' },
+  default: { userAgent: '', cfClearance: '', minIntervalSeconds: 0, cooldownMinutes: 0 },
 } as const;
 
 export const configSchema: Schema<ThingfinderConfig> = {
@@ -81,8 +85,12 @@ export const configKeys = [
   'polypizza.apiKey',
   'stlfinder.userAgent',
   'stlfinder.cfClearance',
+  'stlfinder.minIntervalSeconds',
+  'stlfinder.cooldownMinutes',
   'yeggi.userAgent',
   'yeggi.cfClearance',
+  'yeggi.minIntervalSeconds',
+  'yeggi.cooldownMinutes',
   'flaresolverr.url',
   'preferredFormats',
 ] as const;

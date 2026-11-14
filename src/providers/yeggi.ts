@@ -6,6 +6,10 @@ export class YeggiProvider extends MetaSearchProvider {
       name: 'yeggi',
       searchUrl: q => `https://www.yeggi.com/q/${q}/`,
       selfHost: /yeggi\.com$/,
+      // The aggressive one: space requests 20 s apart, 15-minute base cooldown.
+      defaultMinIntervalSeconds: 20,
+      defaultCooldownMinutes: 15,
+      retryDelayMs: 20_000,
     });
   }
 }
