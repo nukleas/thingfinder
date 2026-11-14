@@ -16,7 +16,10 @@ Search **Thingiverse**, **Printables**, and **Thangs** from a single command. No
 npm install -g github:Whatsmename/thingfinder
 ```
 
-Requires Node.js >= 20.
+Requires Node.js >= 20. Installing from GitHub runs a build step
+(`prepare: npm run build`); npm 12+ blocks lifecycle scripts by default, so if
+the CLI reports a missing `dist`, re-run with
+`--allow-scripts=thingfinder` as npm's warning suggests.
 
 Note: the `thingfinder` name on the npm registry is the upstream
 [nukleas/thingfinder](https://github.com/nukleas/thingfinder) build (v0.1.1,

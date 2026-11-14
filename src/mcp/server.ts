@@ -4,11 +4,12 @@ import { listSources } from '../lib/sources.js';
 import { searchModels } from '../lib/search.js';
 import { listFiles } from '../lib/files.js';
 import { downloadModel } from '../lib/download.js';
+import { VERSION } from '../version.js';
 
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'thingfinder',
-    version: '0.1.0',
+    version: VERSION,
   });
 
   server.registerTool(
