@@ -39,7 +39,7 @@ export function createConfigCommand(): Command {
     .action(() => {
       const store = getStore();
       for (const key of configKeys) {
-        const value: unknown = store.get(key as never);
+        const value = store.get(key as never) as string | string[] | number | undefined;
         const display = key.endsWith('.apiKey') && value
           ? '****' + String(value).slice(-4)
           : String(value) || '(not set)';

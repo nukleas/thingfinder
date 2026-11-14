@@ -18,7 +18,7 @@ export function getConfigValue<K extends ConfigKey>(
 ): K extends 'preferredFormats' ? string[] : string {
   const s = getStore();
   const value = s.get(key as never);
-  return value as K extends 'preferredFormats' ? string[] : string;
+  return value;
 }
 
 export function setConfigValue(key: ConfigKey, value: string): void {
