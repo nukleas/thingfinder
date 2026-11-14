@@ -192,6 +192,27 @@ describe('StlfinderProvider', () => {
     await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/Timeout after 150/);
   });
 
+  it('should honour the provider solver budget in the solver request', async () => {
+    mockConfigGet.mockReturnValue('https://solver.example/v1');
+    const solverFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ status: 'ok', solution: { status_code: 200, response: sampleHtml } }),
+    });
+    globalThis.fetch = solverFetch;
+
+    const provider = new MetaSearchProvider({
+      name: 'yeggi',
+      searchUrl: q => `https://www.yeggi.com/q/${q}/`,
+      selfHost: /yeggi\.com$/,
+      solverTimeoutMs: 60_000,
+    });
+    await provider.search({ query: 'benchy' });
+
+    const init = solverFetch.mock.calls[0][1] as { body: string };
+    const body = JSON.parse(init.body);
+    expect(body.maxTimeout).toBe(60_000);
+  });
+
   it('should reject fetchFile as browse-only', async () => {
     await expect(provider.fetchFile('https://example.com/x.stl')).rejects.toThrow(/search index/);
   });

@@ -24,6 +24,8 @@ export interface MetaSearchSpec {
   defaultCooldownMinutes?: number;
   /** In-process pause before the single retry after a soft-block (ms). */
   retryDelayMs?: number;
+  /** FlareSolverr challenge budget in ms (default 120000). */
+  solverTimeoutMs?: number;
 }
 
 const DEFAULT_UA =
@@ -139,6 +141,12 @@ export class MetaSearchProvider implements SourceProvider {
     return cooldownBaseMs(minutes);
   }
 
+  private solverTimeoutMs(): number {
+    const raw = Number(getConfigValue(`${this.name}.solverTimeoutSeconds` as ConfigKey));
+    if (Number.isFinite(raw) && raw > 0) return raw * 1000;
+    return this.spec.solverTimeoutMs ?? 120_000;
+  }
+
   /** Fetch search HTML via solver (preferred) or direct HTTP; tags soft blocks. */
   private async fetchPage(targetUrl: string): Promise<string> {
     let html: string;
@@ -171,17 +179,25 @@ export class MetaSearchProvider implements SourceProvider {
 
   private async fetchViaSolver(targetUrl: string): Promise<string> {
     const solverUrl = this.getFlareSolverrUrl();
-    const resp = await fetch(solverUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cmd: 'request.get',
-        url: targetUrl,
-        maxTimeout: 120000,
-        session: `thingfinder-${this.name}-${Date.now()}`,
-      }),
-      signal: AbortSignal.timeout(150_000),
-    });
+    const budgetMs = this.solverTimeoutMs();
+    let resp: Response;
+    try {
+      resp = await fetch(solverUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cmd: 'request.get',
+          url: targetUrl,
+          maxTimeout: budgetMs,
+          session: `thingfinder-${this.name}-${Date.now()}`,
+        }),
+        signal: AbortSignal.timeout(budgetMs + 30_000),
+      });
+    } catch (err) {
+      throw this.rateLimited(
+        `FlareSolverr request timed out after ${Math.round(budgetMs / 1000)}s${err instanceof Error ? ` (${err.message})` : ''}.`,
+      );
+    }
 
     if (!resp.ok) {
       let reason = `HTTP ${resp.status}`;

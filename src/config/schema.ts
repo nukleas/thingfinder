@@ -46,8 +46,9 @@ const clearanceSection = {
     cfClearance: { type: 'string', default: '' },
     minIntervalSeconds: { type: 'number', default: 0 },
     cooldownMinutes: { type: 'number', default: 0 },
+    solverTimeoutSeconds: { type: 'number', default: 0 },
   },
-  default: { userAgent: '', cfClearance: '', minIntervalSeconds: 0, cooldownMinutes: 0 },
+  default: { userAgent: '', cfClearance: '', minIntervalSeconds: 0, cooldownMinutes: 0, solverTimeoutSeconds: 0 },
 } as const;
 
 export const configSchema: Schema<ThingfinderConfig> = {
@@ -87,10 +88,12 @@ export const configKeys = [
   'stlfinder.cfClearance',
   'stlfinder.minIntervalSeconds',
   'stlfinder.cooldownMinutes',
+  'stlfinder.solverTimeoutSeconds',
   'yeggi.userAgent',
   'yeggi.cfClearance',
   'yeggi.minIntervalSeconds',
   'yeggi.cooldownMinutes',
+  'yeggi.solverTimeoutSeconds',
   'flaresolverr.url',
   'preferredFormats',
 ] as const;

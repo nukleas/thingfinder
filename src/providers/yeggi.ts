@@ -10,6 +10,8 @@ export class YeggiProvider extends MetaSearchProvider {
       defaultMinIntervalSeconds: 20,
       defaultCooldownMinutes: 15,
       retryDelayMs: 20_000,
+      // Yeggi's challenge rarely clears past a minute — fail fast, back off.
+      solverTimeoutMs: 60_000,
     });
   }
 }

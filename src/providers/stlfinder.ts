@@ -46,6 +46,7 @@ export class StlfinderProvider extends MetaSearchProvider {
       defaultMinIntervalSeconds: 0,
       defaultCooldownMinutes: 5,
       retryDelayMs: 0,
+      solverTimeoutMs: 120_000,
     });
   }
 }

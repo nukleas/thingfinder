@@ -130,8 +130,14 @@ proceed. Tune per site:
 ```bash
 thingfinder config set yeggi.minIntervalSeconds 60
 thingfinder config set yeggi.cooldownMinutes     30
+thingfinder config set yeggi.solverTimeoutSeconds 60
 thingfinder config set stlfinder.minIntervalSeconds 5
 ```
+
+Yeggi's defaults are deliberately conservative (20 s spacing, 15-minute base
+cooldown, 60 s solver challenge budget — its challenge rarely clears past a
+minute, so it fails fast and backs off). STLFinder keeps the full 120 s
+budget.
 
 Without a solver, these two sources only work with a `cf_clearance` cookie +
 User-Agent copied from your own browser **on the same network**:
