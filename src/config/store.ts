@@ -11,15 +11,21 @@ export function getStore(): Conf<ThingfinderConfig> {
   return store;
 }
 
-export function getConfigValue<K extends ConfigKey>(key: K): ThingfinderConfig[K] {
-  return getStore().get(key);
+// Dot-separated keys (e.g. `thingiverse.apiKey`) are resolved by conf's
+// dot-prop support against the nested schema declared in schema.ts.
+export function getConfigValue<K extends ConfigKey>(
+  key: K,
+): K extends 'preferredFormats' ? string[] : string {
+  const s = getStore();
+  const value = s.get(key);
+  return value as unknown as K extends 'preferredFormats' ? string[] : string;
 }
 
 export function setConfigValue(key: ConfigKey, value: string): void {
   const s = getStore();
   if (key === 'preferredFormats') {
-    s.set(key, value.split(',').map(v => v.trim()));
+    s.set(key as never, value.split(',').map(v => v.trim()) as never);
   } else {
-    s.set(key, value);
+    s.set(key as never, value as never);
   }
 }
