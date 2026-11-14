@@ -43,12 +43,19 @@ tsup produces three entry points:
 |----------|------|------|
 | Thangs | None | Full |
 | Printables | None | Full |
+| Poly Haven | None | Full |
+| AmbientCG | None | Full |
 | Thingiverse | API key | Full |
 | Sketchfab | API token | Full |
 | MyMiniFactory | API key | Full |
 | Cults3D | API key | Browse-only |
+| Poly Pizza | API key | Full |
+| STLFinder | cf_clearance (optional) | Browse-only (Cloudflare scrape) |
+| Yeggi | cf_clearance (optional) | Browse-only (Cloudflare scrape) |
 
 Auth pattern: env var `THINGFINDER_<PROVIDER>_API_KEY` with config store fallback (`<provider>.apiKey`).
+Meta-search providers use `<provider>.cfClearance` / `<provider>.userAgent` to pass Cloudflare challenges.
+`MetaSearchProvider` (src/providers/metasearch.ts) is the shared scrape base — outbound-link parser is heuristic.
 
 ## Code Style
 

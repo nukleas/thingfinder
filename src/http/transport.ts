@@ -7,6 +7,7 @@ export interface TransportResponse {
   statusText: string;
   headers: { get(name: string): string | null };
   json(): Promise<unknown>;
+  text(): Promise<string>;
   body: ReadableStream<Uint8Array> | null;
 }
 

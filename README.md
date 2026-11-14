@@ -94,11 +94,43 @@ thingfinder config path
 
 ## Sources
 
-| Source | Auth Required | Notes |
-|--------|--------------|-------|
-| **Thangs** | No | Aggregates models from 90+ sites. Works out of the box. |
-| **Printables** | No | Prusa's model repository. Search + direct download. |
-| **Thingiverse** | Yes (API key) | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
+| Source | Auth Required | Type | Notes |
+|--------|--------------|------|-------|
+| **Thangs** | No | Search + download | Aggregates models from 90+ sites. Works out of the box. |
+| **Printables** | No | Search + download | Prusa's model repository. Search + direct download. |
+| **Poly Haven** | No | Search + download | CC0 models/materials with direct CDN download links (blend, fbx, gltf, obj, usd + textures). |
+| **AmbientCG** | No | Search + download | CC0 PBR assets with direct download links (ZIP/7Z per asset). |
+| **Thingiverse** | Yes (API key) | Search + download | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
+| **Sketchfab** | Yes (API token) | Search + download | Free API token from Sketchfab account settings. |
+| **MyMiniFactory** | Yes (API key) | Search + download | Free API key from MyMiniFactory developer settings. |
+| **Cults3D** | Yes (API key) | Search only | Cults3D's API does not allow downloading other users' files. |
+| **Poly Pizza** | Yes (API key) | Search + download | The public API now requires a key (free on request from poly.pizza). |
+| **STLFinder** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
+| **Yeggi** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
+
+\* STLFinder and Yeggi sit behind Cloudflare bot challenges. The built-in
+browser-impersonation transport passes some networks; on others you need to
+supply a `cf_clearance` cookie + User-Agent from your own browser **on the same
+network**:
+
+```bash
+thingfinder config set stlfinder.cfClearance <cookie value>
+thingfinder config set stlfinder.userAgent  "<the User-Agent that got the cookie>"
+thingfinder config set yeggi.cfClearance     <cookie value>
+thingfinder config set yeggi.userAgent       "<the User-Agent that got the cookie>"
+```
+
+Without clearance, searching these two reports a clear warning and the other
+sources proceed normally.
+
+### Poly Pizza Setup
+
+Request an API key from [poly.pizza](https://poly.pizza), then:
+
+```bash
+thingfinder config set polypizza.apiKey YOUR_KEY
+# or: export THINGFINDER_POLYPIZZA_API_KEY=YOUR_KEY
+```
 
 ### Thingiverse Setup
 
