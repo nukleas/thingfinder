@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createProgram } from '../../src/cli.js';
+import { VERSION } from '../../src/version.js';
 
 describe('CLI', () => {
   it('should create program with all commands', () => {
@@ -14,7 +15,7 @@ describe('CLI', () => {
 
   it('should have version set', () => {
     const program = createProgram();
-    expect(program.version()).toBe('0.1.0');
+    expect(program.version()).toBe(VERSION);
   });
 
   it('should have verbose option', () => {

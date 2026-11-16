@@ -4,11 +4,12 @@ import { listSources } from '../lib/sources.js';
 import { searchModels } from '../lib/search.js';
 import { listFiles } from '../lib/files.js';
 import { downloadModel } from '../lib/download.js';
+import { VERSION } from '../version.js';
 
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'thingfinder',
-    version: '0.1.0',
+    version: VERSION,
   });
 
   server.registerTool(
@@ -29,10 +30,10 @@ export function createServer(): McpServer {
     'search_models',
     {
       title: 'Search 3D Models',
-      description: 'Search for 3D printable models across multiple sources (Thangs, Printables, Thingiverse, Sketchfab, MyMiniFactory, Cults3D)',
+      description: 'Search for 3D models across multiple sources (Thangs, Printables, Thingiverse, Sketchfab, MyMiniFactory, Cults3D, Poly Haven, AmbientCG, Poly Pizza, STLFinder, Yeggi)',
       inputSchema: z.object({
         query: z.string().describe('Search query (e.g. "raspberry pi case", "cable clip")'),
-        source: z.string().optional().describe('Limit to a specific source (thangs, printables, thingiverse, sketchfab, myminifactory, cults3d)'),
+        source: z.string().optional().describe('Limit to a specific source (thangs, printables, thingiverse, sketchfab, myminifactory, cults3d, polyhaven, ambientcg, polypizza, stlfinder, yeggi)'),
         sort: z.enum(['relevant', 'popular', 'newest']).optional().describe('Sort order. Default: relevant'),
         limit: z.number().optional().describe('Max results per source. Default: 20'),
       }),

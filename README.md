@@ -11,14 +11,20 @@ Search **Thingiverse**, **Printables**, and **Thangs** from a single command. No
 ## Quick Start
 
 ```bash
-# Run instantly with npx (no install needed)
-npx thingfinder search "benchy"
-
-# Or install globally
-npm install -g thingfinder
+# Install this repo's build (all 11 sources incl. Poly Haven, AmbientCG,
+# Poly Pizza, and FlareSolverr-backed STLFinder/Yeggi):
+npm install -g github:Whatsmename/thingfinder
 ```
 
-Requires Node.js >= 20.
+Requires Node.js >= 20. Installing from GitHub runs a build step
+(`prepare: npm run build`); npm 12+ blocks lifecycle scripts by default, so if
+the CLI reports a missing `dist`, re-run with
+`--allow-scripts=thingfinder` as npm's warning suggests.
+
+Note: the `thingfinder` name on the npm registry is the upstream
+[nukleas/thingfinder](https://github.com/nukleas/thingfinder) build (v0.1.1,
+3 sources) and lags this repository; `npx thingfinder` / `npm i -g thingfinder`
+installs that older package, not the 11-source build described here.
 
 ## Why thingfinder?
 
@@ -94,11 +100,72 @@ thingfinder config path
 
 ## Sources
 
-| Source | Auth Required | Notes |
-|--------|--------------|-------|
-| **Thangs** | No | Aggregates models from 90+ sites. Works out of the box. |
-| **Printables** | No | Prusa's model repository. Search + direct download. |
-| **Thingiverse** | Yes (API key) | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
+| Source | Auth Required | Type | Notes |
+|--------|--------------|------|-------|
+| **Thangs** | No | Search + download | Aggregates models from 90+ sites. Works out of the box. |
+| **Printables** | No | Search + download | Prusa's model repository. Search + direct download. |
+| **Poly Haven** | No | Search + download | CC0 models/materials with direct CDN download links (blend, fbx, gltf, obj, usd + textures). |
+| **AmbientCG** | No | Search + download | CC0 PBR assets with direct download links (ZIP/7Z per asset). |
+| **Thingiverse** | Yes (API key) | Search + download | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
+| **Sketchfab** | Yes (API token) | Search + download | Free API token from Sketchfab account settings. |
+| **MyMiniFactory** | Yes (API key) | Search + download | Free API key from MyMiniFactory developer settings. |
+| **Cults3D** | Yes (API key) | Search only | Cults3D's API does not allow downloading other users' files. |
+| **Poly Pizza** | Yes (API key) | Search + download | The public API now requires a key (free on request from poly.pizza). |
+| **STLFinder** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
+| **Yeggi** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
+
+\* STLFinder and Yeggi sit behind Cloudflare bot challenges that plain HTTP
+clients cannot pass. The recommended way is a **FlareSolverr** endpoint on your
+network (a headless browser that solves the challenge and returns the page):
+
+```bash
+thingfinder config set flaresolverr.url http://your-host:8192/v1
+```
+
+Searches then go through the solver automatically (fresh session per request,
+clear verdicts when a solver times out or the site's backend is down).
+
+**Rate limiting & backoff.** These two sources share a persistent per-site
+guard (state file next to your config). Yeggi defaults to a minimum of 20 s
+between requests; after a blocked attempt (403/challenge/solver timeout/site
+500) the provider retries once, then cools down — 15 minutes for yeggi, 5 for
+STLFinder — doubling per repeat up to 2 hours. During cooldown the source
+fails instantly with `Rate limited. Retry after Xs` and the other sources
+proceed. Tune per site:
+
+```bash
+thingfinder config set yeggi.minIntervalSeconds 60
+thingfinder config set yeggi.cooldownMinutes     30
+thingfinder config set yeggi.solverTimeoutSeconds 60
+thingfinder config set stlfinder.minIntervalSeconds 5
+```
+
+Yeggi's defaults are deliberately conservative (20 s spacing, 15-minute base
+cooldown, 60 s solver challenge budget — its challenge rarely clears past a
+minute, so it fails fast and backs off). STLFinder keeps the full 120 s
+budget.
+
+Without a solver, these two sources only work with a `cf_clearance` cookie +
+User-Agent copied from your own browser **on the same network**:
+
+```bash
+thingfinder config set stlfinder.cfClearance <cookie value>
+thingfinder config set stlfinder.userAgent  "<the User-Agent that got the cookie>"
+thingfinder config set yeggi.cfClearance     <cookie value>
+thingfinder config set yeggi.userAgent       "<the User-Agent that got the cookie>"
+```
+
+Without either, searching these two reports a clear warning and the other
+sources proceed normally.
+
+### Poly Pizza Setup
+
+Request an API key from [poly.pizza](https://poly.pizza), then:
+
+```bash
+thingfinder config set polypizza.apiKey YOUR_KEY
+# or: export THINGFINDER_POLYPIZZA_API_KEY=YOUR_KEY
+```
 
 ### Thingiverse Setup
 
@@ -159,10 +226,11 @@ Thingfinder includes a [Model Context Protocol](https://modelcontextprotocol.io/
 ### Setup with Claude Code
 
 ```bash
-# Build first
-npm run build
+# After a global install (npm install -g github:Whatsmename/thingfinder):
+claude mcp add thingfinder thingfinder-mcp
 
-# Add to Claude Code project config (~/.claude.json)
+# Or from a local clone:
+npm run build
 claude mcp add thingfinder node /path/to/thingfinder/dist/mcp.js
 ```
 
@@ -173,8 +241,7 @@ Or manually add to your project's `mcpServers` in `~/.claude.json`:
   "mcpServers": {
     "thingfinder": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/path/to/thingfinder/dist/mcp.js"]
+      "command": "thingfinder-mcp"
     }
   }
 }
