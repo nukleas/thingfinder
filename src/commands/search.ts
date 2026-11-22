@@ -1,8 +1,9 @@
 import { Command } from 'commander';
-import { getRegistry } from '../providers/index.js';
+import { getRegistry, sourceNames } from '../providers/index.js';
 import { formatResultsTable } from '../ui/table.js';
 import { selectModel, selectFiles } from '../ui/prompts.js';
 import { downloadFiles } from '../download/manager.js';
+import { filterByFormat } from '../download/formats.js';
 import { createSpinner } from '../ui/spinner.js';
 import { logger } from '../logger.js';
 import { searchModels } from '../lib/search.js';
@@ -13,7 +14,7 @@ export function createSearchCommand(): Command {
     .description('Search for 3D models across multiple sources')
     .argument('<query>', 'Search query')
     .option('-i, --interactive', 'Interactive mode: select and download files')
-    .option('-s, --source <sources...>', 'Only search specific sources (thangs, printables, thingiverse, sketchfab, myminifactory, cults3d)')
+    .option('-s, --source <sources...>', `Only search specific sources (${sourceNames()})`)
     .option('--sort <order>', 'Sort order: relevant, popular, newest', 'relevant')
     .option('-n, --limit <count>', 'Max results per source', '20')
     .option('-o, --output <dir>', 'Download directory')
@@ -28,6 +29,9 @@ export function createSearchCommand(): Command {
     }) => {
       const registry = getRegistry();
       const available = registry.getAvailable();
+      const searched = options.source?.length
+        ? available.filter(p => options.source?.includes(p.name))
+        : available;
 
       if (available.length === 0) {
         logger.error('No providers available. Configure at least one source.');
@@ -63,14 +67,14 @@ export function createSearchCommand(): Command {
         console.log();
         console.log(formatResultsTable(deduplicated));
         console.log();
-        console.log(`${deduplicated.length} results from ${available.length} source(s)`);
+        console.log(`${deduplicated.length} results from ${searched.length} source(s)`);
 
         // Hint about unconfigured sources
         const all = registry.getAll();
         const unconfigured = all.filter(p => !p.isAvailable());
         if (unconfigured.length > 0) {
           const names = unconfigured.map(p => p.name).join(', ');
-          logger.info(`Tip: ${names} not searched (API key not configured). Run: thingfinder config set <source>.apiKey <key>`);
+          logger.info(`Tip: ${names} not searched (not configured). Run: thingfinder config list`);
         }
       }
     });
@@ -101,8 +105,7 @@ async function interactiveMode(results: SearchResult[], outputDir?: string, form
   spinner.stop();
 
   if (formats?.length) {
-    const fmts = new Set(formats.map(f => f.toLowerCase().replace(/^\./, '')));
-    files = files.filter(f => fmts.has(f.format.toLowerCase()));
+    files = filterByFormat(files, formats);
   }
 
   if (files.length === 0) {

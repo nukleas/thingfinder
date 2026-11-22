@@ -10,7 +10,9 @@ export function isVerbose(): boolean {
 
 export const logger = {
   info(message: string) {
-    console.log(message);
+    // stdout is reserved for machine-readable results and JSON-RPC (MCP);
+    // progress text goes to stderr so the stdio transport stays clean.
+    console.error(message);
   },
   warn(message: string) {
     console.error(`⚠ ${message}`);

@@ -1,6 +1,7 @@
 import { select, checkbox } from '@inquirer/prompts';
 import type { SearchResult, ModelFile } from '../providers/types.js';
 import { truncate, formatSize } from './format.js';
+import { isPreferred } from '../download/formats.js';
 
 export async function selectModel(results: SearchResult[]): Promise<SearchResult | null> {
   const choices: Array<{ name: string; value: SearchResult | null; description: string }> = results.map(r => ({
@@ -31,7 +32,7 @@ export async function selectFiles(files: ModelFile[]): Promise<ModelFile[]> {
   const choices = files.map(f => ({
     name: `${f.name}${formatSize(f.size)} [${f.format}]`,
     value: f,
-    checked: ['stl', '3mf'].includes(f.format.toLowerCase()),
+    checked: isPreferred(f),
   }));
 
   const selected = await checkbox<ModelFile>({

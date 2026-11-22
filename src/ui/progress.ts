@@ -6,6 +6,9 @@ export function createProgressBar(filename: string): cliProgress.SingleBar {
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true,
+    // Render on stderr: stdout carries CLI results and MCP JSON-RPC.
+    // Non-TTY stderr (pipeds/MCP) suppresses bar rendering entirely.
+    stream: process.stderr,
   });
 
   return bar;

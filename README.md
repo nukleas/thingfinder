@@ -6,7 +6,7 @@
 
 CLI tool, library, and MCP server for searching and downloading 3D printing files.
 
-Search **Thingiverse**, **Printables**, and **Thangs** from a single command. No more opening three browser tabs.
+Search **Thangs**, **Printables**, **Thingiverse**, and more from a single command. No more opening a dozen browser tabs.
 
 ## Quick Start
 
@@ -18,11 +18,11 @@ npx thingfinder search "benchy"
 npm install -g thingfinder
 ```
 
-Requires Node.js >= 20.
+Requires Node.js 22.22+, 24.15+, or 26+.
 
 ## Why thingfinder?
 
-- **One search, multiple sources** - Query Thangs, Printables, and Thingiverse simultaneously
+- **One search, multiple sources** - Query every configured source simultaneously
 - **Terminal-native** - Fits into scripting and automation workflows
 - **No browser needed** - Search and download without leaving your terminal
 - **Interactive or scripted** - Use `-i` for interactive file selection, or `--all` for batch downloads
@@ -94,11 +94,59 @@ thingfinder config path
 
 ## Sources
 
-| Source | Auth Required | Notes |
-|--------|--------------|-------|
-| **Thangs** | No | Aggregates models from 90+ sites. Works out of the box. |
-| **Printables** | No | Prusa's model repository. Search + direct download. |
-| **Thingiverse** | Yes (API key) | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
+| Source | Auth Required | Type | Notes |
+|--------|--------------|------|-------|
+| **Thangs** | No | Search + download | Aggregates models from 90+ sites. Works out of the box. |
+| **Printables** | No | Search + download | Prusa's model repository. Search + direct download. |
+| **Poly Haven** | No | Search + download | CC0 models/materials with direct CDN download links (blend, fbx, gltf, obj, usd + textures). |
+| **Thingiverse** | Yes (API key) | Search + download | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
+| **Sketchfab** | Yes (API token) | Search + download | Free API token from Sketchfab account settings. |
+| **MyMiniFactory** | Yes (API key) | Search + download | Free API key from MyMiniFactory developer settings. |
+| **Cults3D** | Yes (API key) | Search only | Cults3D's API does not allow downloading other users' files. |
+| **Poly Pizza** | Yes (API key) | Search + download | Free low-poly CC0/CC-BY models (GLB). Free API key from [poly.pizza/settings/api](https://poly.pizza/settings/api). |
+| **STLFinder** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
+\* STLFinder sits behind a Cloudflare bot challenge that plain HTTP clients
+cannot pass, so it is **off until you configure it**. The recommended way is a
+**FlareSolverr** endpoint on your network (a headless browser that solves the
+challenge and returns the page):
+
+```bash
+docker run -d --name flaresolverr -p 8191:8191 ghcr.io/flaresolverr/flaresolverr:latest
+thingfinder config set flaresolverr.url http://localhost:8191/v1
+```
+
+> **Use at your own risk.** Getting past a site's bot protection may go against
+> its terms of service, and the site may rate-limit or block your IP or
+> account. Turning this source on means you accept that risk.
+
+**Rate limiting & backoff.** STLFinder uses a persistent guard (state file next
+to your config). After a blocked attempt (403, challenge, solver timeout, site
+500) it retries once, then cools down for 5 minutes, doubling per repeat up to
+2 hours. During cooldown it fails instantly with `Rate limited. Retry after Xs`
+and the other sources proceed. Tune it with:
+
+```bash
+thingfinder config set stlfinder.minIntervalSeconds   5    # spacing between requests
+thingfinder config set stlfinder.cooldownMinutes      10   # base cooldown
+thingfinder config set stlfinder.solverTimeoutSeconds 60   # solver budget (default 120)
+```
+
+Without a solver, STLFinder can use a `cf_clearance` cookie and User-Agent
+copied from your own browser **on the same network**:
+
+```bash
+thingfinder config set stlfinder.cfClearance <cookie value>
+thingfinder config set stlfinder.userAgent   "<the User-Agent that got the cookie>"
+```
+
+### Poly Pizza Setup
+
+Create an app at [poly.pizza/settings/api](https://poly.pizza/settings/api) (free account) and copy its API key, then:
+
+```bash
+thingfinder config set polypizza.apiKey YOUR_KEY
+# or: export THINGFINDER_POLYPIZZA_API_KEY=YOUR_KEY
+```
 
 ### Thingiverse Setup
 
@@ -159,10 +207,11 @@ Thingfinder includes a [Model Context Protocol](https://modelcontextprotocol.io/
 ### Setup with Claude Code
 
 ```bash
-# Build first
-npm run build
+# After a global install (npm install -g thingfinder):
+claude mcp add thingfinder thingfinder-mcp
 
-# Add to Claude Code project config (~/.claude.json)
+# Or from a local clone:
+npm run build
 claude mcp add thingfinder node /path/to/thingfinder/dist/mcp.js
 ```
 
@@ -173,8 +222,7 @@ Or manually add to your project's `mcpServers` in `~/.claude.json`:
   "mcpServers": {
     "thingfinder": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/path/to/thingfinder/dist/mcp.js"]
+      "command": "thingfinder-mcp"
     }
   }
 }
@@ -226,7 +274,7 @@ const { files: downloaded } = await downloadModel('694802', 'printables', {
 - Rate limits (429) are retried with backoff
 - Network errors retry 3 times with exponential backoff
 - Failed downloads are saved as `.partial` files for retry
-- Sources without configured auth are silently skipped
+- Sources that are not configured (API key, solver) are skipped
 
 ## Development
 
@@ -253,6 +301,15 @@ npm run typecheck
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+
+## Acknowledgements
+
+- [@Whatsmename](https://github.com/Whatsmename) contributed the Poly Haven,
+  Poly Pizza, and STLFinder sources, the FlareSolverr meta-search and rate
+  guard, the MCP stdout fix, and the 0.2.0 dependency upgrade.
+- The Poly Haven provider is adapted from
+  [pikalover6/3dfetch](https://github.com/pikalover6/3dfetch) (MIT); Poly Pizza
+  was first ported from it too.
 
 ## License
 

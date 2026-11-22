@@ -173,16 +173,20 @@ export class PrintablesProvider implements SourceProvider {
 
     const p = detail.print;
     const files: ModelFile[] = [];
+    const groupOf = new Map<string, string>();
 
-    const addFiles = (entries: FileEntry[], format: string) => {
+    // `group` is Printables' download bucket (the "stls" bucket also holds
+    // .3mf/.obj etc.); `format` comes from the file extension.
+    const addFiles = (entries: FileEntry[], group: string) => {
       for (const f of entries) {
         files.push({
           id: f.id,
           name: f.name,
           url: '', // Will be resolved via getDownloadLink
           size: f.fileSize,
-          format,
+          format: /\.([a-z0-9]+)$/i.exec(f.name)?.[1]?.toLowerCase() ?? group,
         });
+        groupOf.set(f.id, group);
       }
     };
 
@@ -195,9 +199,10 @@ export class PrintablesProvider implements SourceProvider {
     if (files.length > 0) {
       const filesByType = new Map<string, string[]>();
       for (const f of files) {
-        const ids = filesByType.get(f.format) ?? [];
+        const group = groupOf.get(f.id) ?? f.format;
+        const ids = filesByType.get(group) ?? [];
         ids.push(f.id);
-        filesByType.set(f.format, ids);
+        filesByType.set(group, ids);
       }
 
       const downloadFiles = [...filesByType.entries()].map(([fileType, ids]) => ({
