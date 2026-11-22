@@ -103,7 +103,7 @@ thingfinder config path
 | **Sketchfab** | Yes (API token) | Search + download | Free API token from Sketchfab account settings. |
 | **MyMiniFactory** | Yes (API key) | Search + download | Free API key from MyMiniFactory developer settings. |
 | **Cults3D** | Yes (API key) | Search only | Cults3D's API does not allow downloading other users' files. |
-| **Poly Pizza** | Yes (API key) | Search + download | The public API now requires a key (free on request from poly.pizza). |
+| **Poly Pizza** | Yes (API key) | Search + download | Free low-poly CC0/CC-BY models (GLB). Free API key from [poly.pizza/settings/api](https://poly.pizza/settings/api). |
 | **STLFinder** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
 | **Yeggi** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
 
@@ -157,7 +157,7 @@ Without either, these two sources are skipped.
 
 ### Poly Pizza Setup
 
-Request an API key from [poly.pizza](https://poly.pizza), then:
+Create an app at [poly.pizza/settings/api](https://poly.pizza/settings/api) (free account) and copy its API key, then:
 
 ```bash
 thingfinder config set polypizza.apiKey YOUR_KEY
