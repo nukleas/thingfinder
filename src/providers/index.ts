@@ -8,7 +8,6 @@ import { Cults3dProvider } from './cults3d.js';
 import { PolyhavenProvider } from './polyhaven.js';
 import { PolypizzaProvider } from './polypizza.js';
 import { StlfinderProvider } from './stlfinder.js';
-import { YeggiProvider } from './yeggi.js';
 
 let registry: ProviderRegistry | null = null;
 
@@ -24,7 +23,6 @@ export function getRegistry(): ProviderRegistry {
     registry.register(new PolyhavenProvider());
     registry.register(new PolypizzaProvider());
     registry.register(new StlfinderProvider());
-    registry.register(new YeggiProvider());
   }
   return registry;
 }

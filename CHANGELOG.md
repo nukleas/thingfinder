@@ -7,9 +7,9 @@ Most of this release was contributed by [@Whatsmename](https://github.com/Whatsm
 ### Added
 
 - Poly Haven source (no auth) and Poly Pizza source (API key).
-- STLFinder and Yeggi meta-search sources (opt-in). They need a FlareSolverr
-  endpoint (`flaresolverr.url`) or a `cf_clearance` cookie, and use a persistent
-  per-site rate guard with exponential backoff.
+- STLFinder meta-search source (opt-in). It needs a FlareSolverr endpoint
+  (`flaresolverr.url`) or a `cf_clearance` cookie, and uses a persistent rate
+  guard with exponential backoff.
 - `--version` and the MCP `serverInfo` now report the real package version.
 
 ### Fixed
@@ -31,3 +31,11 @@ Most of this release was contributed by [@Whatsmename](https://github.com/Whatsm
 - CLI info lines ("No results found.", "Downloaded N file(s)", tips) now print
   to stderr; the results table stays on stdout.
 - `config list` masks `cfClearance` cookies as well as API keys.
+
+### Not included
+
+- **Yeggi** was contributed but left out. It hard-blocks non-browser clients,
+  and a headless solver cleared its check in about 1 of 4 attempts, so each
+  failure stalled searches for minutes and repeated attempts risk getting the
+  user's IP banned. If there is demand, the planned approach is to open a real
+  browser for the user to clear the check, then reuse its cookie.

@@ -118,7 +118,7 @@ export class MetaSearchProvider implements SourceProvider {
 
       if (resp.status === 403) {
         throw this.rateLimited(
-          `Cloudflare/bot challenge blocked the search (HTTP 403). Set a FlareSolverr endpoint (thingfinder config set flaresolverr.url http://host:8192/v1) or supply a cf_clearance cookie: thingfinder config set ${this.name}.cfClearance <value> (must be from the same network).`,
+          `Cloudflare/bot challenge blocked the search (HTTP 403). Set a FlareSolverr endpoint (thingfinder config set flaresolverr.url http://localhost:8191/v1) or supply a cf_clearance cookie: thingfinder config set ${this.name}.cfClearance <value> (must be from the same network).`,
         );
       }
       if (!resp.ok) {
@@ -130,7 +130,7 @@ export class MetaSearchProvider implements SourceProvider {
 
     if (/just a moment|challenge-form|enable js and disable any ad blocker/i.test(html.slice(0, 4000))) {
       throw this.rateLimited(
-        `Cloudflare challenge page served. Set a FlareSolverr endpoint (thingfinder config set flaresolverr.url http://host:8192/v1) to solve it.`,
+        `Cloudflare challenge page served. Set a FlareSolverr endpoint (thingfinder config set flaresolverr.url http://localhost:8191/v1) to solve it.`,
       );
     }
 

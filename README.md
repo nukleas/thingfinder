@@ -105,55 +105,39 @@ thingfinder config path
 | **Cults3D** | Yes (API key) | Search only | Cults3D's API does not allow downloading other users' files. |
 | **Poly Pizza** | Yes (API key) | Search + download | Free low-poly CC0/CC-BY models (GLB). Free API key from [poly.pizza/settings/api](https://poly.pizza/settings/api). |
 | **STLFinder** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
-| **Yeggi** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
-
-\* STLFinder and Yeggi sit behind Cloudflare bot challenges that plain HTTP
-clients cannot pass, so they are **off until you configure them**. The
-recommended way is a **FlareSolverr** endpoint on your network (a headless
-browser that solves the challenge and returns the page):
+\* STLFinder sits behind a Cloudflare bot challenge that plain HTTP clients
+cannot pass, so it is **off until you configure it**. The recommended way is a
+**FlareSolverr** endpoint on your network (a headless browser that solves the
+challenge and returns the page):
 
 ```bash
-thingfinder config set flaresolverr.url http://your-host:8192/v1
+docker run -d --name flaresolverr -p 8191:8191 ghcr.io/flaresolverr/flaresolverr:latest
+thingfinder config set flaresolverr.url http://localhost:8191/v1
 ```
-
-Searches then go through the solver automatically (a temporary browser per
-request, clear verdicts when a solver times out or the site's backend is down).
 
 > **Use at your own risk.** Getting past a site's bot protection may go against
 > its terms of service, and the site may rate-limit or block your IP or
-> account. Turning these sources on means you accept that risk.
+> account. Turning this source on means you accept that risk.
 
-**Rate limiting & backoff.** These two sources share a persistent per-site
-guard (state file next to your config). Yeggi defaults to a minimum of 20 s
-between requests; after a blocked attempt (403/challenge/solver timeout/site
-500) the provider retries once, then cools down — 15 minutes for yeggi, 5 for
-STLFinder — doubling per repeat up to 2 hours. During cooldown the source
-fails instantly with `Rate limited. Retry after Xs` and the other sources
-proceed. Tune per site:
+**Rate limiting & backoff.** STLFinder uses a persistent guard (state file next
+to your config). After a blocked attempt (403, challenge, solver timeout, site
+500) it retries once, then cools down for 5 minutes, doubling per repeat up to
+2 hours. During cooldown it fails instantly with `Rate limited. Retry after Xs`
+and the other sources proceed. Tune it with:
 
 ```bash
-thingfinder config set yeggi.minIntervalSeconds 60
-thingfinder config set yeggi.cooldownMinutes     30
-thingfinder config set yeggi.solverTimeoutSeconds 60
-thingfinder config set stlfinder.minIntervalSeconds 5
+thingfinder config set stlfinder.minIntervalSeconds   5    # spacing between requests
+thingfinder config set stlfinder.cooldownMinutes      10   # base cooldown
+thingfinder config set stlfinder.solverTimeoutSeconds 60   # solver budget (default 120)
 ```
 
-Yeggi's defaults are deliberately conservative (20 s spacing, 15-minute base
-cooldown, 60 s solver challenge budget — its challenge rarely clears past a
-minute, so it fails fast and backs off). STLFinder keeps the full 120 s
-budget.
-
-Without a solver, these two sources only work with a `cf_clearance` cookie +
-User-Agent copied from your own browser **on the same network**:
+Without a solver, STLFinder can use a `cf_clearance` cookie and User-Agent
+copied from your own browser **on the same network**:
 
 ```bash
 thingfinder config set stlfinder.cfClearance <cookie value>
-thingfinder config set stlfinder.userAgent  "<the User-Agent that got the cookie>"
-thingfinder config set yeggi.cfClearance     <cookie value>
-thingfinder config set yeggi.userAgent       "<the User-Agent that got the cookie>"
+thingfinder config set stlfinder.userAgent   "<the User-Agent that got the cookie>"
 ```
-
-Without either, these two sources are skipped.
 
 ### Poly Pizza Setup
 
@@ -321,10 +305,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
 ## Acknowledgements
 
 - [@Whatsmename](https://github.com/Whatsmename) contributed the Poly Haven,
-  Poly Pizza, STLFinder, and Yeggi sources, the FlareSolverr meta-search and
-  rate guard, the MCP stdout fix, and the 0.2.0 dependency upgrade.
-- The Poly Haven and Poly Pizza providers are adapted from
-  [pikalover6/3dfetch](https://github.com/pikalover6/3dfetch) (MIT).
+  Poly Pizza, and STLFinder sources, the FlareSolverr meta-search and rate
+  guard, the MCP stdout fix, and the 0.2.0 dependency upgrade.
+- The Poly Haven provider is adapted from
+  [pikalover6/3dfetch](https://github.com/pikalover6/3dfetch) (MIT); Poly Pizza
+  was first ported from it too.
 
 ## License
 

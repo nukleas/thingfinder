@@ -181,8 +181,8 @@ describe('StlfinderProvider', () => {
     globalThis.fetch = solverFetch;
 
     const provider = new MetaSearchProvider({
-      name: 'yeggi',
-      searchUrl: q => `https://www.yeggi.com/q/${q}/`,
+      name: 'testsearch',
+      searchUrl: q => `https://search.example/q/${q}/`,
       parse: stubParse,
       solverTimeoutMs: 60_000,
     });
@@ -215,8 +215,8 @@ describe('meta-search rate guard', () => {
 
   const guarded = () =>
     new MetaSearchProvider({
-      name: 'yeggiguard',
-      searchUrl: q => `https://www.yeggi.com/q/${q}/`,
+      name: 'testguard',
+      searchUrl: q => `https://search.example/q/${q}/`,
       parse: stubParse,
       defaultMinIntervalSeconds: 20,
       defaultCooldownMinutes: 15,

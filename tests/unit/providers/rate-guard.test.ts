@@ -27,13 +27,13 @@ afterEach(() => {
 
 describe('checkGuard', () => {
   it('allows a fresh provider', () => {
-    const verdict = checkGuard('yeggi', 20_000);
+    const verdict = checkGuard('testsite', 20_000);
     expect(verdict.ok).toBe(true);
   });
 
   it('enforces the minimum interval between requests', () => {
-    markRequest('yeggi');
-    const verdict = checkGuard('yeggi', 20_000);
+    markRequest('testsite');
+    const verdict = checkGuard('testsite', 20_000);
     expect(verdict.ok).toBe(false);
     expect(verdict.retryInMs).toBeGreaterThan(0);
     expect(verdict.retryInMs).toBeLessThanOrEqual(20_000);
@@ -41,38 +41,38 @@ describe('checkGuard', () => {
   });
 
   it('zero minInterval never blocks on spacing', () => {
-    markRequest('yeggi');
-    expect(checkGuard('yeggi', 0).ok).toBe(true);
+    markRequest('testsite');
+    expect(checkGuard('testsite', 0).ok).toBe(true);
   });
 });
 
 describe('backoff cooldowns', () => {
   it('blocks after a failure for the base cooldown', () => {
-    const cooldown = markFailure('yeggi', 60_000);
+    const cooldown = markFailure('testsite', 60_000);
     expect(cooldown).toBe(60_000);
-    const verdict = checkGuard('yeggi', 0);
+    const verdict = checkGuard('testsite', 0);
     expect(verdict.ok).toBe(false);
     expect(verdict.retryInMs).toBeGreaterThan(0);
     expect(verdict.reason).toContain('failure');
   });
 
   it('doubles the cooldown per consecutive failure', () => {
-    expect(markFailure('yeggi', 60_000)).toBe(60_000);
-    expect(markFailure('yeggi', 60_000)).toBe(120_000);
-    expect(markFailure('yeggi', 60_000)).toBe(240_000);
+    expect(markFailure('testsite', 60_000)).toBe(60_000);
+    expect(markFailure('testsite', 60_000)).toBe(120_000);
+    expect(markFailure('testsite', 60_000)).toBe(240_000);
   });
 
   it('caps the cooldown at 2 hours', () => {
     let last = 0;
-    for (let i = 0; i < 20; i++) last = markFailure('yeggi', 60_000);
+    for (let i = 0; i < 20; i++) last = markFailure('testsite', 60_000);
     expect(last).toBe(2 * 60 * 60 * 1000);
   });
 
   it('resets the streak on success', () => {
-    markFailure('yeggi', 60_000);
-    markSuccess('yeggi');
-    expect(checkGuard('yeggi', 0).ok).toBe(true);
-    expect(markFailure('yeggi', 60_000)).toBe(60_000);
+    markFailure('testsite', 60_000);
+    markSuccess('testsite');
+    expect(checkGuard('testsite', 0).ok).toBe(true);
+    expect(markFailure('testsite', 60_000)).toBe(60_000);
   });
 });
 

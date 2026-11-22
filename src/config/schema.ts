@@ -27,7 +27,6 @@ export interface ThingfinderConfig {
   cults3d: ApiKeySection;
   polypizza: ApiKeySection;
   stlfinder: BrowserClearanceSection;
-  yeggi: BrowserClearanceSection;
   flaresolverr: FlareSolverrSection;
   preferredFormats: string[];
 }
@@ -63,7 +62,6 @@ export const configSchema: Schema<ThingfinderConfig> = {
   cults3d: apiKeySection,
   polypizza: apiKeySection,
   stlfinder: clearanceSection,
-  yeggi: clearanceSection,
   flaresolverr: {
     type: 'object',
     properties: {
@@ -90,11 +88,6 @@ export const configKeys = [
   'stlfinder.minIntervalSeconds',
   'stlfinder.cooldownMinutes',
   'stlfinder.solverTimeoutSeconds',
-  'yeggi.userAgent',
-  'yeggi.cfClearance',
-  'yeggi.minIntervalSeconds',
-  'yeggi.cooldownMinutes',
-  'yeggi.solverTimeoutSeconds',
   'flaresolverr.url',
   'preferredFormats',
 ] as const;
@@ -105,9 +98,6 @@ const numericKeys: ReadonlySet<ConfigKey> = new Set([
   'stlfinder.minIntervalSeconds',
   'stlfinder.cooldownMinutes',
   'stlfinder.solverTimeoutSeconds',
-  'yeggi.minIntervalSeconds',
-  'yeggi.cooldownMinutes',
-  'yeggi.solverTimeoutSeconds',
 ]);
 
 export function isNumericKey(key: ConfigKey): boolean {

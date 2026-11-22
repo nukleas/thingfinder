@@ -26,13 +26,13 @@ afterAll(() => {
 
 describe('config store', () => {
   it('stores numeric keys as numbers so schema validation passes', () => {
-    setConfigValue('yeggi.minIntervalSeconds', '60');
-    expect(getConfigNumber('yeggi.minIntervalSeconds')).toBe(60);
+    setConfigValue('stlfinder.minIntervalSeconds', '60');
+    expect(getConfigNumber('stlfinder.minIntervalSeconds')).toBe(60);
   });
 
   it('rejects non-numeric values for numeric keys', () => {
-    expect(() => setConfigValue('yeggi.cooldownMinutes', 'soon')).toThrow(/non-negative number/);
-    expect(() => setConfigValue('yeggi.cooldownMinutes', '-5')).toThrow(/non-negative number/);
+    expect(() => setConfigValue('stlfinder.cooldownMinutes', 'soon')).toThrow(/non-negative number/);
+    expect(() => setConfigValue('stlfinder.cooldownMinutes', '-5')).toThrow(/non-negative number/);
   });
 
   it('stores string and list keys unchanged', () => {
@@ -44,7 +44,7 @@ describe('config store', () => {
 
   it('treats API keys and clearance cookies as secrets', () => {
     expect(isSecretKey('thingiverse.apiKey')).toBe(true);
-    expect(isSecretKey('yeggi.cfClearance')).toBe(true);
+    expect(isSecretKey('stlfinder.cfClearance')).toBe(true);
     expect(isSecretKey('flaresolverr.url')).toBe(false);
   });
 });

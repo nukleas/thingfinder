@@ -50,7 +50,6 @@ tsup produces three entry points:
 | Cults3D | API key | Browse-only |
 | Poly Pizza | API key | Full |
 | STLFinder | Opt-in: FlareSolverr or cf_clearance | Browse-only (Cloudflare scrape) |
-| Yeggi | Opt-in: FlareSolverr or cf_clearance | Browse-only (Cloudflare scrape) |
 
 Auth pattern: env var `THINGFINDER_<PROVIDER>_API_KEY` with config store fallback (`<provider>.apiKey`).
 Meta-search providers use `flaresolverr.url` (preferred, solver-backed fetch with fresh sessions) or `<provider>.cfClearance` / `<provider>.userAgent` to pass Cloudflare challenges.
