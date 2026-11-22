@@ -81,5 +81,18 @@ describe('PrintablesProvider', () => {
       });
       expect(files[0].url).toContain('files.printables.com');
     });
+
+    it('should take format from the extension but request links by Printables bucket', async () => {
+      const client = (provider as unknown as { client: { post: ReturnType<typeof vi.fn> } }).client;
+      const detail = structuredClone(detailFixture);
+      detail.data.print.stls.push({ id: '50000', name: 'Benchy.3MF', fileSize: 1000 });
+      client.post.mockResolvedValueOnce(detail).mockResolvedValueOnce(downloadFixture);
+
+      const files = await provider.getFiles('3161');
+
+      expect(files.map(f => f.format)).toEqual(['stl', '3mf', 'bgcode']);
+      const mutationVars = client.post.mock.calls[1][1] as { variables: { files: { fileType: string; ids: number[] }[] } };
+      expect(mutationVars.variables.files).toContainEqual({ fileType: 'stl', ids: [49068, 50000] });
+    });
   });
 });
