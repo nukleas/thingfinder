@@ -10,14 +10,16 @@ import { checkGuard, cooldownBaseMs, formatDuration, markFailure, markRequest, m
 export interface ParsedLink {
   url: string;
   title: string;
+  /** The site the meta-search result links out to (e.g. "Printables"). */
+  site?: string;
+  thumbnailUrl?: string;
 }
 
 export interface MetaSearchSpec {
   name: string;
   searchUrl: (query: string) => string;
-  selfHost: RegExp;
-  /** Site-specific HTML parser; defaults to the generic outbound-link heuristic. */
-  parse?: (html: string, spec: MetaSearchSpec) => ParsedLink[];
+  /** Site-specific parser for the search results HTML. */
+  parse: (html: string) => ParsedLink[];
   /** Minimum seconds between requests to this site (0 = no cross-run spacing). */
   defaultMinIntervalSeconds?: number;
   /** Base cooldown in minutes after a rate-limit-ish failure; doubles per repeat, capped at 2h. */
@@ -30,47 +32,6 @@ export interface MetaSearchSpec {
 
 const DEFAULT_UA =
   'Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0';
-
-/**
- * Heuristic: meta-search result pages list outbound links to the hosting
- * sites. Collect anchors whose href leaves the meta-search host and whose
- * text (or img alt) reads like a model title.
- */
-export function parseOutboundLinks(html: string, selfHost: RegExp): ParsedLink[] {
-  const links: ParsedLink[] = [];
-  const seen = new Set<string>();
-  const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-
-  for (const match of html.matchAll(anchorRe)) {
-    const href = match[1];
-    const inner = match[2];
-
-    if (!/^https?:\/\//.test(href)) continue;
-
-    let host: string;
-    try {
-      host = new URL(href).hostname;
-    } catch {
-      continue;
-    }
-    if (selfHost.test(host)) continue;
-
-    const imgAlt = inner.match(/alt="([^"]{3,120})"/i)?.[1];
-    const text = inner
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    const title = (text.length >= 3 ? text : imgAlt) ?? '';
-    if (title.length < 3) continue;
-
-    const key = href.split('#')[0];
-    if (seen.has(key)) continue;
-    seen.add(key);
-    links.push({ url: href, title: title.slice(0, 160) });
-  }
-
-  return links;
-}
 
 interface FlareSolverrSolution {
   status?: string;
@@ -269,14 +230,14 @@ export class MetaSearchProvider implements SourceProvider {
     }
     markSuccess(this.name);
 
-    const parse = this.spec.parse ?? ((h: string, s: MetaSearchSpec) => parseOutboundLinks(h, s.selfHost));
-    const links = parse(html, this.spec);
+    const links = this.spec.parse(html);
     const limit = options.pageSize ?? 20;
 
     return links.slice(0, limit).map((link, i) => ({
       id: `${this.name}-${i}-${link.url}`,
       name: link.title,
-      creator: `${this.name} (links out)`,
+      creator: link.site ? `${link.site} via ${this.name}` : `${this.name} (links out)`,
+      thumbnailUrl: link.thumbnailUrl,
       url: link.url,
       likes: 0,
       downloads: 0,

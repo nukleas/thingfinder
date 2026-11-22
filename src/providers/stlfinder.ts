@@ -41,7 +41,6 @@ export class StlfinderProvider extends MetaSearchProvider {
     super({
       name: 'stlfinder',
       searchUrl: q => `${ORIGIN}/3dmodels/${q}/`,
-      selfHost: /stlfinder\.com$/,
       parse: parseStlfinderCards,
       defaultMinIntervalSeconds: 0,
       defaultCooldownMinutes: 5,

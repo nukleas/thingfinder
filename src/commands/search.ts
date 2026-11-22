@@ -29,6 +29,9 @@ export function createSearchCommand(): Command {
     }) => {
       const registry = getRegistry();
       const available = registry.getAvailable();
+      const searched = options.source?.length
+        ? available.filter(p => options.source?.includes(p.name))
+        : available;
 
       if (available.length === 0) {
         logger.error('No providers available. Configure at least one source.');
@@ -64,7 +67,7 @@ export function createSearchCommand(): Command {
         console.log();
         console.log(formatResultsTable(deduplicated));
         console.log();
-        console.log(`${deduplicated.length} results from ${available.length} source(s)`);
+        console.log(`${deduplicated.length} results from ${searched.length} source(s)`);
 
         // Hint about unconfigured sources
         const all = registry.getAll();

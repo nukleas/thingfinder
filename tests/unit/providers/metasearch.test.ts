@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { MetaSearchProvider, parseOutboundLinks } from '../../../src/providers/metasearch.js';
+import { MetaSearchProvider } from '../../../src/providers/metasearch.js';
 import { StlfinderProvider } from '../../../src/providers/stlfinder.js';
 
 const mockFetch = vi.fn();
@@ -31,24 +31,7 @@ const sampleHtml = `
   <a href="https://thangs.com/designer/x/3d-model/Y/1">Cool Gear Model</a>
 </body></html>`;
 
-describe('parseOutboundLinks', () => {
-  it('should keep only cross-host anchors with titles', () => {
-    const links = parseOutboundLinks(sampleHtml, /stlfinder\.com$/);
-    const urls = links.map(l => l.url);
-
-    expect(urls).toContain('https://www.thingiverse.com/thing:12345');
-    expect(urls).toContain('https://www.printables.com/model/3161-benchy');
-    expect(urls).toContain('https://thangs.com/designer/x/3d-model/Y/1');
-    expect(urls).not.toContain('https://www.stlfinder.com/about');
-    expect(urls).not.toContain('/relative/link');
-  });
-
-  it('should fall back to img alt for text-less anchors', () => {
-    const links = parseOutboundLinks(sampleHtml, /stlfinder\.com$/);
-    const printables = links.find(l => l.url.includes('printables'));
-    expect(printables?.title).toBe('Benchy printable');
-  });
-});
+const stubParse = () => [{ url: 'https://www.printables.com/model/1-stub', title: 'Stub result' }];
 
 describe('StlfinderProvider', () => {
   let provider: StlfinderProvider;
@@ -75,29 +58,6 @@ describe('StlfinderProvider', () => {
     expect(provider.isAvailable()).toBe(true);
     mockConfigGet.mockImplementation((key: string) => (key === 'stlfinder.cfClearance' ? 'abc' : ''));
     expect(provider.isAvailable()).toBe(true);
-  });
-
-  it('should parse search page results via the generic outbound-link parser', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      headers: { get: () => null },
-      text: () => Promise.resolve(sampleHtml),
-    });
-
-    const generic = new MetaSearchProvider({
-      name: 'testsearch',
-      searchUrl: q => `https://test.example/?q=${q}`,
-      selfHost: /test\.example$/,
-    });
-    const results = await generic.search({ query: 'benchy' });
-
-    expect(results.length).toBeGreaterThan(0);
-    expect(results[0]).toMatchObject({
-      source: 'testsearch',
-      url: expect.stringMatching(/^https?:\/\//),
-    });
   });
 
   it('should throw a Cloudflare hint on 403', async () => {
@@ -223,7 +183,7 @@ describe('StlfinderProvider', () => {
     const provider = new MetaSearchProvider({
       name: 'yeggi',
       searchUrl: q => `https://www.yeggi.com/q/${q}/`,
-      selfHost: /yeggi\.com$/,
+      parse: stubParse,
       solverTimeoutMs: 60_000,
     });
     await provider.search({ query: 'benchy' });
@@ -242,7 +202,7 @@ describe('StlfinderProvider', () => {
     const p = new MetaSearchProvider({
       name: 'testsearch',
       searchUrl: q => `https://test.example/?q=${q}`,
-      selfHost: /test\.example$/,
+      parse: stubParse,
     });
     expect(p.name).toBe('testsearch');
     expect(p.resolveUrl('https://anything')).toBeNull();
@@ -257,7 +217,7 @@ describe('meta-search rate guard', () => {
     new MetaSearchProvider({
       name: 'yeggiguard',
       searchUrl: q => `https://www.yeggi.com/q/${q}/`,
-      selfHost: /yeggi\.com$/,
+      parse: stubParse,
       defaultMinIntervalSeconds: 20,
       defaultCooldownMinutes: 15,
       retryDelayMs: 0,
