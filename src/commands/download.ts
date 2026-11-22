@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { getRegistry } from '../providers/index.js';
 import { HttpClient } from '../http/client.js';
 import { downloadFiles } from '../download/manager.js';
+import { filterByFormat } from '../download/formats.js';
 import { downloadFile } from '../download/stream.js';
 import { selectFiles } from '../ui/prompts.js';
 import { createSpinner } from '../ui/spinner.js';
@@ -58,11 +59,10 @@ export function createDownloadCommand(): Command {
       const files = await provider.getFiles(modelId);
       spinner.stop();
 
-      let filtered = files;
-      if (options.format?.length) {
-        const fmts = new Set(options.format.map(f => f.toLowerCase().replace(/^\./, '')));
-        filtered = files.filter(f => fmts.has(f.format.toLowerCase()));
-      }
+      // The picker shows everything (preferred formats pre-ticked); --all
+      // takes the preferred formats.
+      const interactive = !options.all && !options.format?.length;
+      const filtered = interactive ? files : filterByFormat(files, options.format);
 
       if (filtered.length === 0) {
         logger.info('No downloadable files found.');

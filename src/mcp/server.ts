@@ -85,7 +85,7 @@ export function createServer(): McpServer {
         modelId: z.string().describe('Model ID from search results'),
         source: z.string().describe('Source provider name'),
         outputDir: z.string().optional().describe('Directory to save files. Default: configured download dir or current dir'),
-        formats: z.array(z.string()).optional().describe('Only download these formats (e.g. ["stl", "3mf"])'),
+        formats: z.array(z.string()).optional().describe('Only download these formats (e.g. ["3mf"]). Default: the preferredFormats config (stl, 3mf), or every file if the model has none of those'),
       }),
     },
     async ({ modelId, source, outputDir, formats }) => {

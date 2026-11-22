@@ -19,6 +19,10 @@ vi.mock('../../../src/download/manager.js', () => ({
   downloadFiles: (...args: any[]) => mockDownloadFiles(...args),
 }));
 
+vi.mock('../../../src/config/store.js', () => ({
+  getConfigValue: () => ['stl', '3mf'],
+}));
+
 import { downloadModel } from '../../../src/lib/download.js';
 
 const sampleFiles: ModelFile[] = [
@@ -33,7 +37,7 @@ describe('downloadModel', () => {
     mockDownloadFiles.mockReset();
   });
 
-  it('should download all files for a model', async () => {
+  it('should default to the preferred formats', async () => {
     mockProviders.push({
       name: 'testprovider',
       search: vi.fn().mockResolvedValue([]),
@@ -42,12 +46,12 @@ describe('downloadModel', () => {
       isAvailable: vi.fn().mockReturnValue(true),
       fetchFile: vi.fn(),
     });
-    mockDownloadFiles.mockResolvedValue(['/tmp/part.stl', '/tmp/model.3mf', '/tmp/readme.txt']);
+    mockDownloadFiles.mockResolvedValue(['/tmp/part.stl', '/tmp/model.3mf']);
 
     const result = await downloadModel('model-123', 'testprovider', { outputDir: '/tmp' });
 
-    expect(result.files).toHaveLength(3);
-    expect(mockDownloadFiles).toHaveBeenCalledWith(sampleFiles, '/tmp', expect.any(Function));
+    expect(result.files).toHaveLength(2);
+    expect(mockDownloadFiles).toHaveBeenCalledWith(sampleFiles.slice(0, 2), '/tmp', expect.any(Function));
   });
 
   it('should filter files by format', async () => {

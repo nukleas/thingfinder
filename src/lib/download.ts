@@ -1,6 +1,7 @@
 import { getRegistry } from '../providers/index.js';
 import { ProviderError } from '../errors.js';
 import { downloadFiles } from '../download/manager.js';
+import { filterByFormat } from '../download/formats.js';
 
 export interface DownloadOptions {
   outputDir?: string;
@@ -27,12 +28,7 @@ export async function downloadModel(
     throw new ProviderError(source, `${source} is browse-only and does not support downloads`);
   }
 
-  let files = await provider.getFiles(modelId);
-
-  if (options?.formats?.length) {
-    const fmts = new Set(options.formats.map(f => f.toLowerCase().replace(/^\./, '')));
-    files = files.filter(f => fmts.has(f.format.toLowerCase()));
-  }
+  const files = filterByFormat(await provider.getFiles(modelId), options?.formats);
 
   const downloaded = await downloadFiles(files, options?.outputDir, (url) => provider.fetchFile(url));
 

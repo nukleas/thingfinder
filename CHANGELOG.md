@@ -19,6 +19,9 @@ Most of this release was contributed by [@Whatsmename](https://github.com/Whatsm
   now go to stderr.
 - Printables files report their real format, so `--format stl` no longer
   also downloads `.3mf` files.
+- The `preferredFormats` setting (default `stl,3mf`) is now used: `--all`,
+  MCP and library downloads take those formats, falling back to every file
+  when a model has none. The interactive picker pre-ticks them.
 
 ### Changed
 

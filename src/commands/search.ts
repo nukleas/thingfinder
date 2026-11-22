@@ -3,6 +3,7 @@ import { getRegistry, sourceNames } from '../providers/index.js';
 import { formatResultsTable } from '../ui/table.js';
 import { selectModel, selectFiles } from '../ui/prompts.js';
 import { downloadFiles } from '../download/manager.js';
+import { filterByFormat } from '../download/formats.js';
 import { createSpinner } from '../ui/spinner.js';
 import { logger } from '../logger.js';
 import { searchModels } from '../lib/search.js';
@@ -101,8 +102,7 @@ async function interactiveMode(results: SearchResult[], outputDir?: string, form
   spinner.stop();
 
   if (formats?.length) {
-    const fmts = new Set(formats.map(f => f.toLowerCase().replace(/^\./, '')));
-    files = files.filter(f => fmts.has(f.format.toLowerCase()));
+    files = filterByFormat(files, formats);
   }
 
   if (files.length === 0) {
