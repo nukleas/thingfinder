@@ -2,7 +2,7 @@ import { ProviderError, RateLimitError } from '../errors.js';
 import { HttpClient } from '../http/client.js';
 import { ImpitTransport } from '../http/transport.js';
 import type { TransportResponse } from '../http/transport.js';
-import { getConfigValue } from '../config/store.js';
+import { getConfigNumber, getConfigValue } from '../config/store.js';
 import type { SearchOptions, SearchResult, SourceProvider } from './types.js';
 import type { ConfigKey } from '../config/schema.js';
 import { checkGuard, cooldownBaseMs, formatDuration, markFailure, markRequest, markSuccess } from './rate-guard.js';
@@ -110,7 +110,7 @@ export class MetaSearchProvider implements SourceProvider {
     const headers: Record<string, string> = {
       'User-Agent': ua,
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-AU,en;q=0.9',
+      'Accept-Language': 'en-US,en;q=0.9',
     };
     if (clearance) {
       headers.Cookie = `cf_clearance=${clearance}`;
@@ -130,21 +130,20 @@ export class MetaSearchProvider implements SourceProvider {
   }
 
   private minIntervalMs(): number {
-    const raw = Number(getConfigValue(`${this.name}.minIntervalSeconds` as ConfigKey));
-    const seconds = Number.isFinite(raw) && raw > 0 ? raw : (this.spec.defaultMinIntervalSeconds ?? 0);
+    const seconds =
+      getConfigNumber(`${this.name}.minIntervalSeconds` as ConfigKey) ?? this.spec.defaultMinIntervalSeconds ?? 0;
     return seconds * 1000;
   }
 
   private cooldownBaseMs(): number {
-    const raw = Number(getConfigValue(`${this.name}.cooldownMinutes` as ConfigKey));
-    const minutes = Number.isFinite(raw) && raw > 0 ? raw : (this.spec.defaultCooldownMinutes ?? 15);
+    const minutes =
+      getConfigNumber(`${this.name}.cooldownMinutes` as ConfigKey) ?? this.spec.defaultCooldownMinutes ?? 15;
     return cooldownBaseMs(minutes);
   }
 
   private solverTimeoutMs(): number {
-    const raw = Number(getConfigValue(`${this.name}.solverTimeoutSeconds` as ConfigKey));
-    if (Number.isFinite(raw) && raw > 0) return raw * 1000;
-    return this.spec.solverTimeoutMs ?? 120_000;
+    const seconds = getConfigNumber(`${this.name}.solverTimeoutSeconds` as ConfigKey);
+    return seconds !== undefined ? seconds * 1000 : (this.spec.solverTimeoutMs ?? 120_000);
   }
 
   /** Fetch search HTML via solver (preferred) or direct HTTP; tags soft blocks. */
@@ -188,14 +187,20 @@ export class MetaSearchProvider implements SourceProvider {
         body: JSON.stringify({
           cmd: 'request.get',
           url: targetUrl,
+          // No `session`: FlareSolverr then uses a temporary browser and
+          // tears it down after the request instead of leaking one per call.
           maxTimeout: budgetMs,
-          session: `thingfinder-${this.name}-${Date.now()}`,
         }),
         signal: AbortSignal.timeout(budgetMs + 30_000),
       });
     } catch (err) {
-      throw this.rateLimited(
-        `FlareSolverr request timed out after ${Math.round(budgetMs / 1000)}s${err instanceof Error ? ` (${err.message})` : ''}.`,
+      if (err instanceof Error && err.name === 'TimeoutError') {
+        throw this.rateLimited(`FlareSolverr request timed out after ${Math.round(budgetMs / 1000)}s.`);
+      }
+      // Unreachable solver is a config problem, not a site block: no cooldown.
+      throw new ProviderError(
+        this.name,
+        `Could not reach FlareSolverr at ${solverUrl}${err instanceof Error ? ` (${err.message})` : ''}. Check flaresolverr.url.`,
       );
     }
 
@@ -287,8 +292,9 @@ export class MetaSearchProvider implements SourceProvider {
     return null;
   }
 
+  /** Opt-in: only searched once a solver endpoint or clearance cookie is configured. */
   isAvailable(): boolean {
-    return true;
+    return Boolean(this.getFlareSolverrUrl() || getConfigValue(`${this.name}.cfClearance` as ConfigKey));
   }
 
   fetchFile = (_url: string): Promise<TransportResponse> =>

@@ -1,5 +1,5 @@
 import Conf from 'conf';
-import { configSchema, type ConfigKey, type ThingfinderConfig } from './schema.js';
+import { configSchema, isNumericKey, type ConfigKey, type ThingfinderConfig } from './schema.js';
 
 let store: Conf<ThingfinderConfig> | null = null;
 
@@ -25,6 +25,12 @@ export function setConfigValue(key: ConfigKey, value: string): void {
   const s = getStore();
   if (key === 'preferredFormats') {
     s.set(key as never, value.split(',').map(v => v.trim()) as never);
+  } else if (isNumericKey(key)) {
+    const n = Number(value);
+    if (value.trim() === '' || !Number.isFinite(n) || n < 0) {
+      throw new Error(`${key} must be a non-negative number (got "${value}")`);
+    }
+    s.set(key as never, n as never);
   } else {
     s.set(key as never, value as never);
   }
@@ -32,7 +38,6 @@ export function setConfigValue(key: ConfigKey, value: string): void {
 
 /** Positive-number config lookup; unset/0/invalid => undefined. */
 export function getConfigNumber(key: ConfigKey): number | undefined {
-  const raw = getConfigValue(key);
-  const n = Number(raw);
+  const n = Number(getStore().get(key as never));
   return Number.isFinite(n) && n > 0 ? n : undefined;
 }

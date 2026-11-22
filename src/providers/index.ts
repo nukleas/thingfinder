@@ -6,7 +6,6 @@ import { SketchfabProvider } from './sketchfab.js';
 import { MyMiniFactoryProvider } from './myminifactory.js';
 import { Cults3dProvider } from './cults3d.js';
 import { PolyhavenProvider } from './polyhaven.js';
-import { AmbientcgProvider } from './ambientcg.js';
 import { PolypizzaProvider } from './polypizza.js';
 import { StlfinderProvider } from './stlfinder.js';
 import { YeggiProvider } from './yeggi.js';
@@ -23,10 +22,14 @@ export function getRegistry(): ProviderRegistry {
     registry.register(new MyMiniFactoryProvider());
     registry.register(new Cults3dProvider());
     registry.register(new PolyhavenProvider());
-    registry.register(new AmbientcgProvider());
     registry.register(new PolypizzaProvider());
     registry.register(new StlfinderProvider());
     registry.register(new YeggiProvider());
   }
   return registry;
+}
+
+/** Comma-separated names of every registered source, for help text. */
+export function sourceNames(): string {
+  return getRegistry().getAll().map(p => p.name).join(', ');
 }

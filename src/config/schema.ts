@@ -12,6 +12,7 @@ export interface BrowserClearanceSection {
   cfClearance: string;
   minIntervalSeconds: number;
   cooldownMinutes: number;
+  solverTimeoutSeconds: number;
 }
 
 export interface FlareSolverrSection {
@@ -99,6 +100,24 @@ export const configKeys = [
 ] as const;
 
 export type ConfigKey = (typeof configKeys)[number];
+
+const numericKeys: ReadonlySet<ConfigKey> = new Set([
+  'stlfinder.minIntervalSeconds',
+  'stlfinder.cooldownMinutes',
+  'stlfinder.solverTimeoutSeconds',
+  'yeggi.minIntervalSeconds',
+  'yeggi.cooldownMinutes',
+  'yeggi.solverTimeoutSeconds',
+]);
+
+export function isNumericKey(key: ConfigKey): boolean {
+  return numericKeys.has(key);
+}
+
+/** Keys whose values are credentials and must be masked when displayed. */
+export function isSecretKey(key: ConfigKey): boolean {
+  return key.endsWith('.apiKey') || key.endsWith('.cfClearance');
+}
 
 export function isValidKey(key: string): key is ConfigKey {
   return (configKeys as readonly string[]).includes(key);

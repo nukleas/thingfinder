@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 
-// Resolved from the package root's package.json at build time (esbuild inlines it),
-// so the CLI/MCP version can never drift from the published version.
+// Read from the package root's package.json at runtime (src/ and dist/ are both
+// one level below it), so the CLI/MCP version can never drift from the package.
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json') as { version: string };
 

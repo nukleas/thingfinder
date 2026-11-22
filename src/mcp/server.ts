@@ -5,6 +5,7 @@ import { searchModels } from '../lib/search.js';
 import { listFiles } from '../lib/files.js';
 import { downloadModel } from '../lib/download.js';
 import { VERSION } from '../version.js';
+import { sourceNames } from '../providers/index.js';
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -30,10 +31,10 @@ export function createServer(): McpServer {
     'search_models',
     {
       title: 'Search 3D Models',
-      description: 'Search for 3D models across multiple sources (Thangs, Printables, Thingiverse, Sketchfab, MyMiniFactory, Cults3D, Poly Haven, AmbientCG, Poly Pizza, STLFinder, Yeggi)',
+      description: `Search for 3D models across multiple sources (${sourceNames()})`,
       inputSchema: z.object({
         query: z.string().describe('Search query (e.g. "raspberry pi case", "cable clip")'),
-        source: z.string().optional().describe('Limit to a specific source (thangs, printables, thingiverse, sketchfab, myminifactory, cults3d, polyhaven, ambientcg, polypizza, stlfinder, yeggi)'),
+        source: z.string().optional().describe(`Limit to a specific source (${sourceNames()})`),
         sort: z.enum(['relevant', 'popular', 'newest']).optional().describe('Sort order. Default: relevant'),
         limit: z.number().optional().describe('Max results per source. Default: 20'),
       }),

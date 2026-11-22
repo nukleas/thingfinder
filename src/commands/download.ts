@@ -36,7 +36,7 @@ export function createDownloadCommand(): Command {
 
       if (!resolved) {
         logger.error('Could not match URL to any known provider.');
-        logger.info('Supported: thingiverse.com, printables.com, thangs.com, sketchfab.com, myminifactory.com, cults3d.com');
+        logger.info('Supported: thingiverse.com, printables.com, thangs.com, sketchfab.com, myminifactory.com, cults3d.com, polyhaven.com, poly.pizza');
         logger.info('You can also provide a direct .stl/.3mf file URL.');
         process.exit(1);
       }

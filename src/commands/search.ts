@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { getRegistry } from '../providers/index.js';
+import { getRegistry, sourceNames } from '../providers/index.js';
 import { formatResultsTable } from '../ui/table.js';
 import { selectModel, selectFiles } from '../ui/prompts.js';
 import { downloadFiles } from '../download/manager.js';
@@ -13,7 +13,7 @@ export function createSearchCommand(): Command {
     .description('Search for 3D models across multiple sources')
     .argument('<query>', 'Search query')
     .option('-i, --interactive', 'Interactive mode: select and download files')
-    .option('-s, --source <sources...>', 'Only search specific sources (thangs, printables, thingiverse, sketchfab, myminifactory, cults3d)')
+    .option('-s, --source <sources...>', `Only search specific sources (${sourceNames()})`)
     .option('--sort <order>', 'Sort order: relevant, popular, newest', 'relevant')
     .option('-n, --limit <count>', 'Max results per source', '20')
     .option('-o, --output <dir>', 'Download directory')
@@ -70,7 +70,7 @@ export function createSearchCommand(): Command {
         const unconfigured = all.filter(p => !p.isAvailable());
         if (unconfigured.length > 0) {
           const names = unconfigured.map(p => p.name).join(', ');
-          logger.info(`Tip: ${names} not searched (API key not configured). Run: thingfinder config set <source>.apiKey <key>`);
+          logger.info(`Tip: ${names} not searched (not configured). Run: thingfinder config list`);
         }
       }
     });

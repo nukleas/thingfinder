@@ -20,7 +20,7 @@ vi.mock('../../../src/providers/index.js', async () => {
     isAvailable: vi.fn().mockReturnValue(false),
     fetchFile: vi.fn(),
   });
-  return { getRegistry: () => registry };
+  return { getRegistry: () => registry, sourceNames: () => 'thangs' };
 });
 
 import { createServer } from '../../../src/mcp/server.js';

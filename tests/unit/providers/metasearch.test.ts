@@ -15,6 +15,10 @@ vi.mock('../../../src/http/transport.js', () => ({
 
 vi.mock('../../../src/config/store.js', () => ({
   getConfigValue: (...args: unknown[]) => mockConfigGet(...args),
+  getConfigNumber: (...args: unknown[]) => {
+    const n = Number(mockConfigGet(...args));
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  },
 }));
 
 const sampleHtml = `
@@ -60,9 +64,16 @@ describe('StlfinderProvider', () => {
     globalThis.fetch = originalFetch;
   });
 
-  it('should be browse-only and available', () => {
+  it('should be browse-only and unavailable until configured', () => {
     expect(provider.name).toBe('stlfinder');
     expect(provider.isBrowseOnly).toBe(true);
+    expect(provider.isAvailable()).toBe(false);
+  });
+
+  it('should become available with a FlareSolverr URL or clearance cookie', () => {
+    mockConfigGet.mockImplementation((key: string) => (key === 'flaresolverr.url' ? 'http://solver/v1' : ''));
+    expect(provider.isAvailable()).toBe(true);
+    mockConfigGet.mockImplementation((key: string) => (key === 'stlfinder.cfClearance' ? 'abc' : ''));
     expect(provider.isAvailable()).toBe(true);
   });
 
@@ -192,6 +203,15 @@ describe('StlfinderProvider', () => {
     await expect(provider.search({ query: 'benchy' })).rejects.toThrow(/Timeout after 150/);
   });
 
+  it('should report an unreachable solver as a config error, not a rate limit', async () => {
+    mockConfigGet.mockReturnValue('http://localhost:1/v1');
+    globalThis.fetch = vi.fn().mockRejectedValue(new TypeError('fetch failed'));
+
+    const err: unknown = await provider.search({ query: 'benchy' }).catch((e: unknown) => e);
+    expect((err as Error).message).toMatch(/Could not reach FlareSolverr/);
+    expect((err as Error).name).not.toBe('RateLimitError');
+  });
+
   it('should honour the provider solver budget in the solver request', async () => {
     mockConfigGet.mockReturnValue('https://solver.example/v1');
     const solverFetch = vi.fn().mockResolvedValue({
@@ -211,6 +231,7 @@ describe('StlfinderProvider', () => {
     const init = solverFetch.mock.calls[0][1] as { body: string };
     const body = JSON.parse(init.body);
     expect(body.maxTimeout).toBe(60_000);
+    expect(body.session).toBeUndefined();
   });
 
   it('should reject fetchFile as browse-only', async () => {
