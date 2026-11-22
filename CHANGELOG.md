@@ -17,6 +17,8 @@ Most of this release was contributed by [@Whatsmename](https://github.com/Whatsm
 - The MCP server no longer writes progress text to stdout, which corrupted the
   JSON-RPC stream during `download_files`. Info messages and the progress bar
   now go to stderr.
+- Printables files report their real format, so `--format stl` no longer
+  also downloads `.3mf` files.
 
 ### Changed
 
