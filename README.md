@@ -6,29 +6,23 @@
 
 CLI tool, library, and MCP server for searching and downloading 3D printing files.
 
-Search **Thingiverse**, **Printables**, and **Thangs** from a single command. No more opening three browser tabs.
+Search **Thangs**, **Printables**, **Thingiverse**, and more from a single command. No more opening a dozen browser tabs.
 
 ## Quick Start
 
 ```bash
-# Install this repo's build (all 11 sources incl. Poly Haven, AmbientCG,
-# Poly Pizza, and FlareSolverr-backed STLFinder/Yeggi):
-npm install -g github:Whatsmename/thingfinder
+# Run instantly with npx (no install needed)
+npx thingfinder search "benchy"
+
+# Or install globally
+npm install -g thingfinder
 ```
 
-Requires Node.js >= 20. Installing from GitHub runs a build step
-(`prepare: npm run build`); npm 12+ blocks lifecycle scripts by default, so if
-the CLI reports a missing `dist`, re-run with
-`--allow-scripts=thingfinder` as npm's warning suggests.
-
-Note: the `thingfinder` name on the npm registry is the upstream
-[nukleas/thingfinder](https://github.com/nukleas/thingfinder) build (v0.1.1,
-3 sources) and lags this repository; `npx thingfinder` / `npm i -g thingfinder`
-installs that older package, not the 11-source build described here.
+Requires Node.js 22.22+, 24.15+, or 26+.
 
 ## Why thingfinder?
 
-- **One search, multiple sources** - Query Thangs, Printables, and Thingiverse simultaneously
+- **One search, multiple sources** - Query every configured source simultaneously
 - **Terminal-native** - Fits into scripting and automation workflows
 - **No browser needed** - Search and download without leaving your terminal
 - **Interactive or scripted** - Use `-i` for interactive file selection, or `--all` for batch downloads
@@ -105,25 +99,29 @@ thingfinder config path
 | **Thangs** | No | Search + download | Aggregates models from 90+ sites. Works out of the box. |
 | **Printables** | No | Search + download | Prusa's model repository. Search + direct download. |
 | **Poly Haven** | No | Search + download | CC0 models/materials with direct CDN download links (blend, fbx, gltf, obj, usd + textures). |
-| **AmbientCG** | No | Search + download | CC0 PBR assets with direct download links (ZIP/7Z per asset). |
 | **Thingiverse** | Yes (API key) | Search + download | Requires an app token from [thingiverse.com/apps/create](https://www.thingiverse.com/apps/create). |
 | **Sketchfab** | Yes (API token) | Search + download | Free API token from Sketchfab account settings. |
 | **MyMiniFactory** | Yes (API key) | Search + download | Free API key from MyMiniFactory developer settings. |
 | **Cults3D** | Yes (API key) | Search only | Cults3D's API does not allow downloading other users' files. |
 | **Poly Pizza** | Yes (API key) | Search + download | The public API now requires a key (free on request from poly.pizza). |
-| **STLFinder** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
-| **Yeggi** | Browser clearance* | Search only | Meta-search across 3D sites; links out to the source site. |
+| **STLFinder** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
+| **Yeggi** | Opt-in* | Search only | Meta-search across 3D sites; links out to the source site. |
 
 \* STLFinder and Yeggi sit behind Cloudflare bot challenges that plain HTTP
-clients cannot pass. The recommended way is a **FlareSolverr** endpoint on your
-network (a headless browser that solves the challenge and returns the page):
+clients cannot pass, so they are **off until you configure them**. The
+recommended way is a **FlareSolverr** endpoint on your network (a headless
+browser that solves the challenge and returns the page):
 
 ```bash
 thingfinder config set flaresolverr.url http://your-host:8192/v1
 ```
 
-Searches then go through the solver automatically (fresh session per request,
-clear verdicts when a solver times out or the site's backend is down).
+Searches then go through the solver automatically (a temporary browser per
+request, clear verdicts when a solver times out or the site's backend is down).
+
+> **Use at your own risk.** Getting past a site's bot protection may go against
+> its terms of service, and the site may rate-limit or block your IP or
+> account. Turning these sources on means you accept that risk.
 
 **Rate limiting & backoff.** These two sources share a persistent per-site
 guard (state file next to your config). Yeggi defaults to a minimum of 20 s
@@ -155,8 +153,7 @@ thingfinder config set yeggi.cfClearance     <cookie value>
 thingfinder config set yeggi.userAgent       "<the User-Agent that got the cookie>"
 ```
 
-Without either, searching these two reports a clear warning and the other
-sources proceed normally.
+Without either, these two sources are skipped.
 
 ### Poly Pizza Setup
 
@@ -226,7 +223,7 @@ Thingfinder includes a [Model Context Protocol](https://modelcontextprotocol.io/
 ### Setup with Claude Code
 
 ```bash
-# After a global install (npm install -g github:Whatsmename/thingfinder):
+# After a global install (npm install -g thingfinder):
 claude mcp add thingfinder thingfinder-mcp
 
 # Or from a local clone:
@@ -293,7 +290,7 @@ const { files: downloaded } = await downloadModel('694802', 'printables', {
 - Rate limits (429) are retried with backoff
 - Network errors retry 3 times with exponential backoff
 - Failed downloads are saved as `.partial` files for retry
-- Sources without configured auth are silently skipped
+- Sources that are not configured (API key, solver) are skipped
 
 ## Development
 
@@ -320,6 +317,14 @@ npm run typecheck
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+
+## Acknowledgements
+
+- [@Whatsmename](https://github.com/Whatsmename) contributed the Poly Haven,
+  Poly Pizza, STLFinder, and Yeggi sources, the FlareSolverr meta-search and
+  rate guard, the MCP stdout fix, and the 0.2.0 dependency upgrade.
+- The Poly Haven and Poly Pizza providers are adapted from
+  [pikalover6/3dfetch](https://github.com/pikalover6/3dfetch) (MIT).
 
 ## License
 
